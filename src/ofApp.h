@@ -66,7 +66,6 @@ class ofApp : public ofBaseApp{
     bool isMaker;
     vector<int> newNotes;
     
-    
     // interface to change layouts and sounds
     ofRectangle uLeft,uRight,dLeft,dRight;
     bool isRandom;
