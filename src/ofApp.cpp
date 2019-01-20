@@ -63,12 +63,27 @@ void ofApp::setup(){
 
     //layout editor
     maker.setup();
-    maker.add(shapeNum.set("shape Number", 0, 0, 16));
+    maker.add(shapeNum.set("shape Number", 0, 0, 100));
     maker.add(shapeNote.set("shape Note",0,0,127));
-    button.setup("Set the note");
-    maker.add(&button);
+    button.setup("Set the Note");
+    button2.setup("Save Layout");
+    maker.add(&button); // change note
+    maker.add(&button2); // save layout
     maker.setPosition(130, 0);
     isMaker=false;
+    
+    
+    //loading layouts to program
+
+    bool parsingSuccessful = jsLayouts.open("layouts.json");
+
+    if (parsingSuccessful)
+    {
+        ofLogNotice("ofApp::setup") << "file is nice!";
+    }else {
+         ofLogError("ofApp::setup")  << "Failed to parse JSON" << endl;
+    }
+
 
 
     // creating or reading the gui settings
@@ -227,8 +242,17 @@ void ofApp::draw(){
         maker.draw();
         
         if (button){
-            newNotes[shapeNum] = shapeNote;
             
+            int x = layout.currentImage;
+            int y = shapeNum;
+            int z = shapeNote;
+            jsLayouts["layouts"][x]["notes"][y] = z;
+        }
+        if (button2){
+            // save the xml with new layout
+            jsLayouts.save("layouts.json");
+
+        
         }
     } // enable the layout editor
     
@@ -349,15 +373,18 @@ void ofApp::drawTheShape(int shapeNum){
     // write the number of shapes
     if (menu){
         ofSetColor(255);
-        ofDrawBitmapString(shapeNum+1, layout.myShapes[shapeNum].getCentroid2D());
+        ofDrawBitmapString(shapeNum, layout.myShapes[shapeNum].getCentroid2D());
         
     }
     
     if (isMaker){
+        
         ofSetColor(255);
         ofDrawBitmapString(shapeNum, layout.myShapes[shapeNum].getCentroid2D());
-        auto s = std::to_string(newNotes[shapeNum]/12);
-        ofDrawBitmapString((noteNames[newNotes[shapeNum]%11]+s), layout.myShapes[shapeNum].getCentroid2D().x,layout.myShapes[shapeNum].getCentroid2D().y+15);
+        
+        auto s = std::to_string(jsLayouts["layouts"][layout.currentImage]["notes"][shapeNum].asInt()/12);
+        
+        ofDrawBitmapString((noteNames[jsLayouts["layouts"][layout.currentImage]["notes"][shapeNum].asInt()%11]+s), layout.myShapes[shapeNum].getCentroid2D().x,layout.myShapes[shapeNum].getCentroid2D().y+15);
         
     }
 }
@@ -366,36 +393,9 @@ void ofApp::drawTheShape(int shapeNum){
 //--------------------------------------------------------------
 void ofApp::layoutToNotes(int note, int velocity){
     
-    if (!isMaker){
-        
-        switch (layout.currentImage){
-                
-            case 0 : mout.sendNoteOn(1, piano[note]+47, velocity, 1000); break; // piano
-            case 1 : mout.sendNoteOn(1, kalimba[note], velocity, 1000); break; // kalimba
-            case 2 : mout.sendNoteOn(1, mpc[note]+36, velocity, 1000) ; break; // mpc
-            case 3 : mout.sendNoteOn(1, tempest[note]+48, velocity, 1000); break; // tempest
-            case 4 : mout.sendNoteOn(1, pushCrom[note]+36, velocity, 1000); break; // push
-            case 5 : mout.sendNoteOn(1, pandrum[note], velocity, 1000) ; break; // pandrum
-            case 6 : mout.sendNoteOn(1, 48+cirOfFif[note], velocity, 1000); break; // CircleOfFifths
-            case 7 : mout.sendNoteOn(1, 36+bigCirc[note], velocity, 1000); break; // CircleV2
-            case 8 : mout.sendNoteOn(1, 36+triangles[note], velocity, 1000); break; // Triangle
-            case 9 : mout.sendNoteOn(1, isoGerhard[note]+48, velocity, 1000); break; // isoGerhard
-            case 10 : mout.sendNoteOn(1, 47+thunder[note], velocity, 1000); break; // thunder
-            case 11 : mout.sendNoteOn(1, 60+birdX[note], velocity, 1000); break; // BirdX
-            case 12 : mout.sendNoteOn(1, janko[note]+48, velocity, 1000); break; // Janko
-            case 13 : mout.sendNoteOn(1, 60+able[note], velocity, 1000); break; // Ableton
-            case 14 : mout.sendNoteOn(1, 36+avicii[note], velocity, 1000); break; // Avicii
-            case 15 : mout.sendNoteOn(1, 36+skrillex[note], velocity, 1000); break; // Skrillex
-            case 16 : mout.sendNoteOn(1, 36+abc[note], velocity, 1000); break; // Charts
-            case 17 : mout.sendNoteOn(1, 36+note, velocity, 1000); break; //
-            case 18 : mout.sendNoteOn(1, 36+note, velocity, 1000); break; //
-        }
-        
-    }else{
-        mout.sendNoteOn(1, newNotes[note], velocity, 1000);
-    }
+//    if (!isMaker){
     
-    
+    mout.sendNoteOn(1, jsLayouts["layouts"][layout.currentImage]["notes"][note].asInt(), velocity, 1000);
     
 }
 
@@ -439,9 +439,9 @@ void ofApp::layoutColor(int i, int val2,int val3){
             
         case 8 :
             //            coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Triangle
-            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), (triangles[i]+1)%12) != std::end(whiteNotes)){
+            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), (jsLayouts["layouts"][14]["notes"][i].asInt()+1)%12) != std::end(whiteNotes)){
                 coolCol = ofColor(255,0,val3);
-            }else if ((triangles[i]+1)%12 == 1){
+            }else if ((jsLayouts["layouts"][14]["notes"][i].asInt()+1)%12 == 1){
                 coolCol = ofColor(0,255,0);
             } else {
                 coolCol = ofColor(val2,0,255);
@@ -452,9 +452,9 @@ void ofApp::layoutColor(int i, int val2,int val3){
             
         case 9 :
             //            coolCol = ofColor::fromHsb(ofMap(isoGerhard[i]%12,0,11,val2,val3),255,255); break; // isoGerhard
-            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), isoGerhard[i]%12) != std::end(whiteNotes)){
+            if (std::find(std::begin(whiteNotes), std::end(whiteNotes),jsLayouts["layouts"][5]["notes"][i].asInt()%12) != std::end(whiteNotes)){
                 coolCol = ofColor(255,0,val3);
-            }else if (isoGerhard[i]%12 == 1){
+            }else if (jsLayouts["layouts"][5]["notes"][i].asInt()%12 == 1){
                 coolCol = ofColor(0,255,0);
             } else {
                 coolCol = ofColor(val2,0,255);
@@ -463,14 +463,14 @@ void ofApp::layoutColor(int i, int val2,int val3){
             break;
             
             
-        case 10 : coolCol = ofColor::fromHsb(ofMap(thunder[i],1,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // thunder
-        case 11 : coolCol = ofColor::fromHsb(ofMap(birdX[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // birdX
+        case 10 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][15]["notes"][i].asInt(),1,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // thunder
+        case 11 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][16]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // birdX
             
         case 12 :
             //            coolCol = ofColor::fromHsb(ofMap(janko[i]%12,0,11,val2,val3),255,255); break; // Janko
-            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), janko[i]%12) != std::end(whiteNotes)){
+            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), jsLayouts["layouts"][6]["notes"][i].asInt()%12) != std::end(whiteNotes)){
                 coolCol = ofColor(255,0,val2);
-            }else if (janko[i]%12 == 1){
+            }else if (jsLayouts["layouts"][6]["notes"][i].asInt()%12 == 1){
                 coolCol = ofColor(0,255,0);
             } else {
                 coolCol = ofColor(val3,0,255);
@@ -478,9 +478,9 @@ void ofApp::layoutColor(int i, int val2,int val3){
             colorList[i] = coolCol;
             break;
             
-        case 13 : coolCol = ofColor::fromHsb(ofMap(able[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Ableton
-        case 14 : coolCol = ofColor::fromHsb(ofMap(avicii[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Avicii
-        case 15 : coolCol = ofColor::fromHsb(ofMap(skrillex[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Skrillex
+        case 13 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][8]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Ableton
+        case 14 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][10]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Avicii
+        case 15 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][11]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Skrillex
         case 16 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Charts
         case 17 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; //
         case 18 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; //
@@ -653,13 +653,12 @@ void ofApp::keyPressed(int key){
             
             //additional layout options:
             
-        case '0': //open layout maker settings
+       
+        case '0':                //open layout maker settings
             isMaker = !isMaker;
-            newNotes.resize(layout.myShapes.size());
-            for (int i = 0; i<newNotes.size();i++){
-                newNotes[i] = i;
-            }
             break;
+            
+            
         case ' ': // change layouts one after another
             isRandom = false;
             if (layout.dir.size() > 0){
