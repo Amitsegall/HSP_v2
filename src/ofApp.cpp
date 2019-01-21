@@ -373,7 +373,7 @@ void ofApp::drawTheShape(int shapeNum){
     // write the number of shapes
     if (menu){
         ofSetColor(255);
-        ofDrawBitmapString(shapeNum, layout.myShapes[shapeNum].getCentroid2D());
+        ofDrawBitmapString(jsLayouts["layouts"][layout.currentImage]["notes"][shapeNum], layout.myShapes[shapeNum].getCentroid2D().x,layout.myShapes[shapeNum].getCentroid2D().y+30);
         
     }
     
@@ -384,7 +384,7 @@ void ofApp::drawTheShape(int shapeNum){
         
         auto s = std::to_string(jsLayouts["layouts"][layout.currentImage]["notes"][shapeNum].asInt()/12);
         
-        ofDrawBitmapString((noteNames[jsLayouts["layouts"][layout.currentImage]["notes"][shapeNum].asInt()%11]+s), layout.myShapes[shapeNum].getCentroid2D().x,layout.myShapes[shapeNum].getCentroid2D().y+15);
+        ofDrawBitmapString((noteNames[jsLayouts["layouts"][layout.currentImage]["notes"][shapeNum].asInt()%12]+s), layout.myShapes[shapeNum].getCentroid2D().x,layout.myShapes[shapeNum].getCentroid2D().y+15);
         
     }
 }
@@ -403,8 +403,10 @@ void ofApp::layoutToNotes(int note, int velocity){
 void ofApp::layoutColor(int i, int val2,int val3){
     
     switch (layout.currentImage){
-            
-        case 0 :
+        
+        case 0 : coolCol = ofColor::fromHsb(ofMap(kalCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // kalimba
+        case 1 : coolCol = ofColor::fromHsb(ofMap(panCol[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // pandrum
+        case 2 :
             //            coolCol = ofColor::fromHsb(ofMap(pianoCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255); break; // piano
             if (std::find(std::begin(whiteNotes), std::end(whiteNotes), pianoCol[i]%12) != std::end(whiteNotes)){
                 coolCol = ofColor(255,0,val2);
@@ -416,41 +418,9 @@ void ofApp::layoutColor(int i, int val2,int val3){
             colorList[i] = coolCol;
             break;
             
-        case 1 : coolCol = ofColor::fromHsb(ofMap(kalCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // kalimba
-        case 2 : coolCol = ofColor::fromHsb(ofMap(mpcCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // mpc
-        case 3 : coolCol = ofColor::fromHsb(ofMap(tempCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // tempest
-            
-        case 4 :
-            //             coolCol = ofColor::fromHsb(ofMap(pushCromCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255); break; // push
-            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), (pushCromCol[i]+1)%12) != std::end(whiteNotes)){
-                coolCol = ofColor(255,0,val2);
-            }else if ((pushCromCol[i]+1)%12 == 1){
-                coolCol = ofColor(0,255,0);
-            } else {
-                coolCol = ofColor(val3,0,255);
-            }
-            colorList[i] = coolCol;
-            break;
-            
-        case 5 : coolCol = ofColor::fromHsb(ofMap(panCol[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // pandrum
-        case 6 : coolCol = ofColor::fromHsb(ofMap(cirOfFifCol[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // CircleOfFifths
-        case 7 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // CircleV2
-            
-            
-        case 8 :
-            //            coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Triangle
-            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), (jsLayouts["layouts"][14]["notes"][i].asInt()+1)%12) != std::end(whiteNotes)){
-                coolCol = ofColor(255,0,val3);
-            }else if ((jsLayouts["layouts"][14]["notes"][i].asInt()+1)%12 == 1){
-                coolCol = ofColor(0,255,0);
-            } else {
-                coolCol = ofColor(val2,0,255);
-            }
-            colorList[i] = coolCol;
-            break;
-            
-            
-        case 9 :
+        case 3 : coolCol = ofColor::fromHsb(ofMap(mpcCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // mpc
+        case 4 : coolCol = ofColor::fromHsb(ofMap(tempCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // tempest
+        case 5 :
             //            coolCol = ofColor::fromHsb(ofMap(isoGerhard[i]%12,0,11,val2,val3),255,255); break; // isoGerhard
             if (std::find(std::begin(whiteNotes), std::end(whiteNotes),jsLayouts["layouts"][5]["notes"][i].asInt()%12) != std::end(whiteNotes)){
                 coolCol = ofColor(255,0,val3);
@@ -462,11 +432,7 @@ void ofApp::layoutColor(int i, int val2,int val3){
             colorList[i] = coolCol;
             break;
             
-            
-        case 10 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][15]["notes"][i].asInt(),1,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // thunder
-        case 11 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][16]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // birdX
-            
-        case 12 :
+        case 6 :
             //            coolCol = ofColor::fromHsb(ofMap(janko[i]%12,0,11,val2,val3),255,255); break; // Janko
             if (std::find(std::begin(whiteNotes), std::end(whiteNotes), jsLayouts["layouts"][6]["notes"][i].asInt()%12) != std::end(whiteNotes)){
                 coolCol = ofColor(255,0,val2);
@@ -478,10 +444,46 @@ void ofApp::layoutColor(int i, int val2,int val3){
             colorList[i] = coolCol;
             break;
             
-        case 13 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][8]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Ableton
-        case 14 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][10]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Avicii
-        case 15 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][11]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Skrillex
-        case 16 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Charts
+        case 7 :
+            //             coolCol = ofColor::fromHsb(ofMap(pushCromCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255); break; // push
+            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), (pushCromCol[i]+1)%12) != std::end(whiteNotes)){
+                coolCol = ofColor(255,0,val2);
+            }else if ((pushCromCol[i]+1)%12 == 1){
+                coolCol = ofColor(0,255,0);
+            } else {
+                coolCol = ofColor(val3,0,255);
+            }
+            colorList[i] = coolCol;
+            break;
+            
+        case 8 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][8]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Ableton
+        
+        case 9 : coolCol = ofColor::fromHsb(ofMap(cirOfFifCol[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // CircleOfFifths
+        
+        case 10 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][10]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Avicii
+            
+        case 11 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][11]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Skrillex
+       
+        case 12 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Charts
+            
+        case 13 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // CircleV2
+            
+        case 14 :
+            //            coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Triangle
+            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), (jsLayouts["layouts"][14]["notes"][i].asInt()+1)%12) != std::end(whiteNotes)){
+                coolCol = ofColor(255,0,val3);
+            }else if ((jsLayouts["layouts"][14]["notes"][i].asInt()+1)%12 == 1){
+                coolCol = ofColor(0,255,0);
+            } else {
+                coolCol = ofColor(val2,0,255);
+            }
+            colorList[i] = coolCol;
+            break;
+            
+        case 15 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][15]["notes"][i].asInt(),1,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // thunder
+            
+        case 16 : coolCol = ofColor::fromHsb(ofMap(jsLayouts["layouts"][16]["notes"][i].asInt(),0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // birdX
+            
         case 17 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; //
         case 18 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; //
             
