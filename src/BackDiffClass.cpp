@@ -13,8 +13,6 @@
 using namespace ofxCv;
 using namespace cv;
 
-
-
 const float dyingTime = 0.25;
 
 void Glow::setup(const cv::Rect& track) {
@@ -81,7 +79,6 @@ void BackDiff::update(ofFbo myImage, int threshold,int blurVal, int minArea, int
     ofPixels locPix;
     myImage.readToPixels(locPix);
   
-    
     colorImg.setFromPixels(locPix);
     
     grayImage = colorImg;

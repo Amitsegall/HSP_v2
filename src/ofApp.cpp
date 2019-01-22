@@ -44,7 +44,6 @@ void ofApp::setup(){
         homoUp2 = false;
     }
 
-
 //    //Gui
     gui.setup();
     gui.add(layThres.set("Layout Threshold",80,0,255));
@@ -55,7 +54,6 @@ void ofApp::setup(){
     gui.add(maxBlob.set("Max Blob size", 3000, 3000, 18000));
     gui.add(minVel.set("Min Velocity",0,0,127));
     gui.add(maxVel.set("Max Velocity",127,0,127));
-
 
     blobview.setup("Display the Blob",true);
     gui.add(&blobview);
@@ -72,19 +70,16 @@ void ofApp::setup(){
     maker.setPosition(130, 0);
     isMaker=false;
     
-    
-    //loading layouts to program
+    //loading layouts to program from .JSON
 
     bool parsingSuccessful = jsLayouts.open("layouts.json");
 
     if (parsingSuccessful)
     {
-        ofLogNotice("ofApp::setup") << "file is nice!";
+        ofLogNotice("ofApp::setup") << "file is working!";
     }else {
          ofLogError("ofApp::setup")  << "Failed to parse JSON" << endl;
     }
-
-
 
     // creating or reading the gui settings
     if (!ofFile("Settings.xml"))
@@ -94,7 +89,6 @@ void ofApp::setup(){
 
     menu = false; // show/hide gui
     liveCam = false; // show/hide live Cam input
-
 
     //layout setup
     layout.setup(1280,800);
@@ -119,7 +113,6 @@ void ofApp::setup(){
         canPlayNow[i]=true;
     }
 
-
     instNum = 19; // set to max - 1;
     colorCheck = 1; // any number that is not zero
     
@@ -137,7 +130,7 @@ void ofApp::update(){
         layout.makeShapesFromBlobs();
     }
 
-    SelectLayoutInterface();
+    SelectLayoutInterface(); /// [ problem number 3!]
 
     musX = ofGetMouseX();
     musY = ofGetMouseY();
@@ -194,7 +187,7 @@ void ofApp::draw(){
         
         
         playWithMouse();
-        drawTheInterface();
+        drawTheInterface();  /// [ problem number 2!]
         
         
         
@@ -593,7 +586,7 @@ void ofApp::updateHomography(){
             mainOut.end();
             
             // processing only the actual space i'm at (the screen):
-            backDiff.update(mainOut,backDiffThres,blurVal,minBlob,maxBlob);
+            backDiff.update(mainOut,backDiffThres,blurVal,minBlob,maxBlob);  /// [ problem number 1!]
             
         }
         
