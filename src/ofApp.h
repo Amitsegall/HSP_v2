@@ -69,8 +69,6 @@ class ofApp : public ofBaseApp{
     vector<int> newNotes;
     
    
-    
-    
     // interface to change layouts and sounds
     ofRectangle uLeft,uRight,dLeft,dRight;
     bool isRandom;

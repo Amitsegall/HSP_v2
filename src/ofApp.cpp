@@ -130,7 +130,7 @@ void ofApp::update(){
         layout.makeShapesFromBlobs();
     }
 
-    SelectLayoutInterface(); /// [ problem number 3!]
+//    SelectLayoutInterface(); /// [ problem number 3!] -- for the moment I'll change layouts manually - find better method later.
 
     musX = ofGetMouseX();
     musY = ofGetMouseY();
@@ -486,7 +486,7 @@ void ofApp::layoutColor(int i, int val2,int val3){
 
 //--------------------------------------------------------------
 
-void ofApp::SelectLayoutInterface(){
+void ofApp::SelectLayoutInterface(){ //// at the moment this funcion is causing problems ! fix before use
     
     if (!isRandom){// if it's not a randomly generated interface
         // change interface from my interface list

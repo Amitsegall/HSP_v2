@@ -13,6 +13,7 @@ void LayoutMaker::setup(int width,int height){
 
     //use computer vision to make interface
 
+    myImage.allocate(width, height, OF_IMAGE_GRAYSCALE);
     colorImg.allocate(width,height);
     grayImage.allocate(width,height);
     grayBg.allocate(width,height);
@@ -110,6 +111,8 @@ void LayoutMaker::findShapesInImage(ofImage myImage){
     
     colorImg.setFromPixels(myImage.getPixels());
     grayImage = colorImg;
+    
+//    grayImage.setFromPixels(myImage.getPixels());
     
     // take the abs value of the difference between background and incoming and then threshold:
     grayDiff.absDiff(grayBg, grayImage);

@@ -62,7 +62,7 @@ void BackDiff::setup(){
     contourFinder2.setMinAreaRadius(35);
     contourFinder2.setMaxAreaRadius(65);
     contourFinder2.setThreshold(165);
-    
+
     // wait for half a frame before forgetting something
     tracker.setPersistence(40);
     // an object can move up to 50 pixels per frame
@@ -80,8 +80,9 @@ void BackDiff::update(ofFbo myImage, int threshold,int blurVal, int minArea, int
     myImage.readToPixels(locPix);
   
     colorImg.setFromPixels(locPix);
-    
     grayImage = colorImg;
+    
+    
 //    grayImage = newImg;
     //Smoothing image
     blurred = grayImage;
