@@ -46,9 +46,7 @@ void ofApp::setup(){
 
 //    //Gui
     gui.setup();
-    gui.add(layThres.set("Layout Threshold",80,0,255));
     gui.add(backDiffThres.set("Back Diff Threshold", 70, 0, 200));
-    gui.add(blurVal.set("Blur value", 0, 0, 30));
     gui.add(minBlobSize.set("Blob Size Hit", 5000, 0, 10000));
     gui.add(minBlob.set("Min Blob min", 0, 0, 10000));
     gui.add(maxBlob.set("Max Blob size", 3000, 3000, 18000));
@@ -92,7 +90,7 @@ void ofApp::setup(){
 
     //layout setup
     layout.setup(1280,800);
-    isRandom = false;
+
 
     //draw hidden interface to change sounds and layouts
     uLeft = ofRectangle(0,0,100,100);
@@ -124,13 +122,7 @@ void ofApp::update(){
 
     updateHomography();
 
-    if(layThres != layout.threshold){
-        layout.threshold = layThres;
-        layout.findShapesInImage(layout.images[layout.currentImage]);
-        layout.makeShapesFromBlobs();
-    }
-
-//    SelectLayoutInterface(); /// [ problem number 3!] -- for the moment I'll change layouts manually - find better method later.
+    SelectLayoutInterface(); /// [ problem number 3!] -- for the moment I'll change layouts manually - find better method later.
 
     musX = ofGetMouseX();
     musY = ofGetMouseY();
@@ -209,7 +201,6 @@ void ofApp::draw(){
         ofDrawRectangle(dLeft);
         ofDrawRectangle(dRight);
         
-        
         gui.draw();
         // draw instructions
         ofSetColor(255, 255, 255);
@@ -258,7 +249,6 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 
 void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c,int blobcount){ // this function is the one that sends midi out !
-    
     
     int smoothVelocity = ofMap(velocity, 0, 4000, minVel, maxVel,true); // smooth the velocity
     
@@ -335,17 +325,12 @@ void ofApp::playWithMouse(){
 //--------------------------------------------------------------
 void ofApp::drawTheInterface(){  // this is what draws the shape and check if they are inside
     
-    
     for (int i = 0; i<layout.myShapes.size();i++){
         
         ofPushStyle();
-        
         drawTheShape(i);
-        
         ofPopStyle();
-        
     }
-    
 }
 
 
@@ -488,77 +473,77 @@ void ofApp::layoutColor(int i, int val2,int val3){
 
 void ofApp::SelectLayoutInterface(){ //// at the moment this funcion is causing problems ! fix before use
     
-    if (!isRandom){// if it's not a randomly generated interface
+
         // change interface from my interface list
-        if (uLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//up left
-            if (canClick[0]){
-                canClick[0] = false;
-                if (layout.currentImage > 0){
-                    layout.currentImage --;
-                    layout.currentImage %= layout.dir.size();
-                    
-                }else {
-                    layout.currentImage = layout.dir.size()-1;
-                    layout.currentImage %= layout.dir.size();
-                }
-            }
-            ccVal = layout.currentImage;
-            mout.sendControlChange(1, 119, ccVal);
-        }else{
-            canClick[0]=true;
-        }
+//        if (uLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//up left
+//            if (canClick[0]){
+//                canClick[0] = false;
+//                if (layout.currentImage > 0){
+//                    layout.currentImage --;
+//                    layout.currentImage %= layout.dir.size();
+//
+//                }else {
+//                    layout.currentImage = layout.dir.size()-1;
+//                    layout.currentImage %= layout.dir.size();
+//                }
+//            }
+//            ccVal = layout.currentImage;
+//            mout.sendControlChange(1, 119, ccVal);
+//        }else{
+//            canClick[0]=true;
+//        }
+//
+//
+//        if (uRight.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//up right
+//            if(canClick[1]){
+//                canClick[1] = false;
+//                layout.currentImage ++;
+//                layout.currentImage %= layout.dir.size();
+//            }
+//            ccVal = layout.currentImage;
+//            mout.sendControlChange(1, 119, ccVal);
+//        }else{
+//            canClick[1]=true;
+//        }
+//
+//        layout.cleanShapes();
+//        layout.findShapesInImage(layout.images[layout.currentImage]);
+//        layout.makeShapesFromBlobs();
         
-        
-        if (uRight.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//up right
-            if(canClick[1]){
-                canClick[1] = false;
-                layout.currentImage ++;
-                layout.currentImage %= layout.dir.size();
-            }
-            ccVal = layout.currentImage;
-            mout.sendControlChange(1, 119, ccVal);
-        }else{
-            canClick[1]=true;
-        }
-        
-        layout.cleanShapes();
-        layout.findShapesInImage(layout.images[layout.currentImage]);
-        layout.makeShapesFromBlobs();
-        
-    } // if it's not a random interface
+
     
     
     // change musical instrument in Ableton using MIDI Control Change msg
-    if (dLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//down left
-        if(canClick[2]){
-            canClick[2] = false;
-            if ( ccVal > 0){
-                ccVal --;
-            }else{
-                ccVal= instNum;
-            }
-            mout.sendControlChange(1, 119, ccVal);
-        }
-    }else{
-        canClick[2]=true;
-    }
-    
-    if (dRight.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//down right
-        if(canClick[3]){
-            canClick[3] = false;
-            
-            ofBackground(255);
-            if ( ccVal < instNum){
-                ccVal ++;
-            }else{
-                ccVal= 0;
-            }
-            mout.sendControlChange(1, 119, ccVal);
-        }
-    }else{
-        canClick[3]=true;
-    }
-    
+//    if (dLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//down left
+//        if(canClick[2]){
+//            canClick[2] = false;
+//            if ( ccVal > 0){
+//                ccVal --;
+//            }else{
+//                ccVal= instNum;
+//            }
+//            mout.sendControlChange(1, 119, ccVal);
+//        }
+//    }else{
+//        canClick[2]=true;
+//    }
+//
+//    if (dRight.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//down right
+//        if(canClick[3]){
+//            canClick[3] = false;
+//
+//            ofBackground(255);
+//            if ( ccVal < instNum){
+//                ccVal ++;
+//            }else{
+//                ccVal= 0;
+//            }
+//            mout.sendControlChange(1, 119, ccVal);
+//        }
+//    }else{
+//        canClick[3]=true;
+//    }
+//
 }
 
 
@@ -586,7 +571,7 @@ void ofApp::updateHomography(){
             mainOut.end();
             
             // processing only the actual space i'm at (the screen):
-            backDiff.update(mainOut,backDiffThres,blurVal,minBlob,maxBlob);  /// [ problem number 1!]
+            backDiff.update(mainOut,backDiffThres,minBlob,maxBlob);  /// [ problem number 1!]
             
         }
         
@@ -655,7 +640,6 @@ void ofApp::keyPressed(int key){
             
             
         case ' ': // change layouts one after another
-            isRandom = false;
             if (layout.dir.size() > 0){
                 layout.currentImage++;
                 layout.currentImage %= layout.dir.size();
@@ -666,12 +650,7 @@ void ofApp::keyPressed(int key){
             layout.findShapesInImage(layout.images[layout.currentImage]);
             layout.makeShapesFromBlobs();
             break;
-        case 'r': //generate random layout with x shapes in it.
-            ofBackground(0);
-            layout.randLayout(2);
-            isRandom = true;
-            break;
-            
+       
             // computer vision settings and tools:
             
         case 'b': //set background for back differencing

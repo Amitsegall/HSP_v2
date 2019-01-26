@@ -21,7 +21,6 @@ public:
     
     // makeShapes
     vector<ofPolyline> myShapes;
-    void randLayout(int shapes);
     void cleanShapes();
     
     

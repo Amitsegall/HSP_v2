@@ -57,12 +57,6 @@ void BackDiff::setup(){
     mask.allocate(1280, 800);
     blurred.allocate(1280, 800);
     
-    
-    // setup for ofxCV
-    contourFinder2.setMinAreaRadius(35);
-    contourFinder2.setMaxAreaRadius(65);
-    contourFinder2.setThreshold(165);
-
     // wait for half a frame before forgetting something
     tracker.setPersistence(40);
     // an object can move up to 50 pixels per frame
@@ -73,20 +67,17 @@ void BackDiff::setup(){
 
 //-----------------------------------------------------
 
-void BackDiff::update(ofFbo myImage, int threshold,int blurVal, int minArea, int maxArea){
+void BackDiff::update(ofFbo myImage, int threshold, int minArea, int maxArea){
     
-   
     ofPixels locPix;
     myImage.readToPixels(locPix);
   
     colorImg.setFromPixels(locPix);
     grayImage = colorImg;
     
-    
-//    grayImage = newImg;
-    //Smoothing image
+    //Smoothing image - if blur value is big frame rate drops !!!!!
     blurred = grayImage;
-    blurred.blurGaussian( blurVal );
+    blurred.blurGaussian(1);
     
     //Store first frame to background image
     if ( !grayBg.bAllocated ) {
@@ -101,9 +92,8 @@ void BackDiff::update(ofFbo myImage, int threshold,int blurVal, int minArea, int
     mask = grayDiff;
     mask.threshold( threshold) ; //set the  Threshold - very important
 
-//
+
     contourFinder.findContours(mask, minArea, maxArea, 20, false);// find holes
-    
     
     //ofxCV
     

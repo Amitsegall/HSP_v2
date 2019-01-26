@@ -37,7 +37,7 @@ class BackDiff {
     
     public:
     void setup();
-    void update(ofFbo myImage,int threshold,int blurVal, int minArea, int maxArea);
+    void update(ofFbo myImage,int threshold, int minArea, int maxArea);
     void draw();
     void setBack();
     
