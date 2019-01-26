@@ -19,7 +19,7 @@ public:
     
    
     void setup(string leftimg, string rightimg);
-    void update(ofFbo vid);
+    void update(ofImage camImage);
     void draw();
     
     bool movePoint(vector<ofVec2f>& points, ofVec2f point);

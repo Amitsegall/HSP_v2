@@ -75,7 +75,7 @@ void BackDiff::update(ofFbo myImage, int threshold, int minArea, int maxArea){
     colorImg.setFromPixels(locPix);
     grayImage = colorImg;
     
-    //Smoothing image - if blur value is big frame rate drops !!!!!
+    //Smoothing image
     blurred = grayImage;
     blurred.blurGaussian(1);
     
@@ -92,8 +92,9 @@ void BackDiff::update(ofFbo myImage, int threshold, int minArea, int maxArea){
     mask = grayDiff;
     mask.threshold( threshold) ; //set the  Threshold - very important
 
-
+//
     contourFinder.findContours(mask, minArea, maxArea, 20, false);// find holes
+    
     
     //ofxCV
     

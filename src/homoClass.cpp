@@ -40,14 +40,10 @@ void HomoClass::setup(string leftimg, string rightimg){
 
 //_____________________________________________
 
-void HomoClass::update(ofFbo vid){
+void HomoClass::update(ofImage camImage){
     
     // get the pixels from the video
-    ofPixels locPix;
-    vid.readToPixels(locPix);
-    
-    
-    imitate(warpedColor, locPix); // importing the current image / graphics / live camera
+    imitate(warpedColor, camImage); // importing the current image / graphics / live camera
     
     if(leftPoints.size() >= 4) {
         vector<Point2f> srcPoints, dstPoints;
@@ -70,9 +66,8 @@ void HomoClass::update(ofFbo vid){
     if(homographyReady) {
         
         // this is how you warp one ofImage into another ofImage given the homography matrix
-        // CV INTER NN is 113 fps, CV_INTER_LINEAR is 93 fps
         
-        warpPerspective(locPix, warpedColor, homography, CV_INTER_LINEAR);
+        warpPerspective(camImage, warpedColor, homography, CV_INTER_LINEAR);// CV INTER NN is 113 fps, CV_INTER_LINEAR is 93 fps
         warpedColor.update(); // transform the warped image in realtime.
         
     }

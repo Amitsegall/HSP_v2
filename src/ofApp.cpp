@@ -17,10 +17,7 @@ void ofApp::setup(){
     chess.load("chess640.jpg");
 
     //init the FBO for homography and tracking
-    camImage.allocate(w, h,GL_RGBA);
-    camImage.begin();
-    ofClear(255, 255, 255,255);
-    camImage.end();
+
     initImage.allocate(w, h,ofImageType::OF_IMAGE_COLOR_ALPHA);
 
     mainOut.allocate(1280, 800,GL_RGB); // otherwise the CV will fail - kill the alpah !
@@ -122,7 +119,7 @@ void ofApp::update(){
 
     updateHomography();
 
-    SelectLayoutInterface(); /// [ problem number 3!] -- for the moment I'll change layouts manually - find better method later.
+    SelectLayoutInterface(); 
 
     musX = ofGetMouseX();
     musY = ofGetMouseY();
@@ -235,7 +232,6 @@ void ofApp::draw(){
         if (button2){
             // save the xml with new layout
             jsLayouts.save("layouts.json");
-
         
         }
     } // enable the layout editor
@@ -371,8 +367,6 @@ void ofApp::drawTheShape(int shapeNum){
 //--------------------------------------------------------------
 void ofApp::layoutToNotes(int note, int velocity){
     
-//    if (!isMaker){
-    
     mout.sendNoteOn(1, jsLayouts["layouts"][layout.currentImage]["notes"][note].asInt(), velocity, 1000);
     
 }
@@ -473,77 +467,79 @@ void ofApp::layoutColor(int i, int val2,int val3){
 
 void ofApp::SelectLayoutInterface(){ //// at the moment this funcion is causing problems ! fix before use
     
+    bool change = false;
+    
+        //  change interface from my interface list
+        if (uLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//up left
+            if (canClick[0]){
+                canClick[0] = false;
+                change = true;
+                if (layout.currentImage > 0){
+                    layout.currentImage --;
+                    layout.currentImage %= layout.dir.size();
 
-        // change interface from my interface list
-//        if (uLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//up left
-//            if (canClick[0]){
-//                canClick[0] = false;
-//                if (layout.currentImage > 0){
-//                    layout.currentImage --;
-//                    layout.currentImage %= layout.dir.size();
-//
-//                }else {
-//                    layout.currentImage = layout.dir.size()-1;
-//                    layout.currentImage %= layout.dir.size();
-//                }
-//            }
-//            ccVal = layout.currentImage;
-//            mout.sendControlChange(1, 119, ccVal);
-//        }else{
-//            canClick[0]=true;
-//        }
-//
-//
-//        if (uRight.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//up right
-//            if(canClick[1]){
-//                canClick[1] = false;
-//                layout.currentImage ++;
-//                layout.currentImage %= layout.dir.size();
-//            }
-//            ccVal = layout.currentImage;
-//            mout.sendControlChange(1, 119, ccVal);
-//        }else{
-//            canClick[1]=true;
-//        }
-//
-//        layout.cleanShapes();
-//        layout.findShapesInImage(layout.images[layout.currentImage]);
-//        layout.makeShapesFromBlobs();
-        
+                }else {
+                    layout.currentImage = layout.dir.size()-1;
+                    layout.currentImage %= layout.dir.size();
+                }
+            }
+            ccVal = layout.currentImage;
+            mout.sendControlChange(1, 119, ccVal);
+        }else{
+            canClick[0]=true;
+        }
+
+
+        if (uRight.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//up right
+            if(canClick[1]){
+                canClick[1] = false;
+                change = true;
+                layout.currentImage ++;
+                layout.currentImage %= layout.dir.size();
+            }
+            ccVal = layout.currentImage;
+            mout.sendControlChange(1, 119, ccVal);
+        }else{
+            canClick[1]=true;
+        }
 
     
+    //  change musical instrument in Ableton using MIDI Control Change msg
+    if (dLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//down left
+        if(canClick[2]){
+            canClick[2] = false;
+            if ( ccVal > 0){
+                ccVal --;
+            }else{
+                ccVal= instNum;
+            }
+            mout.sendControlChange(1, 119, ccVal);
+        }
+    }else{
+        canClick[2]=true;
+    }
+
+    if (dRight.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//down right
+        if(canClick[3]){
+            canClick[3] = false;
+            ofBackground(255);
+            if ( ccVal < instNum){
+                ccVal ++;
+            }else{
+                ccVal= 0;
+            }
+            mout.sendControlChange(1, 119, ccVal);
+        }
+    }else{
+        canClick[3]=true;
+    }
+
+    if (change){ //if layout changed draw new one
+    layout.cleanShapes();
+    layout.findShapesInImage(layout.images[layout.currentImage]);
+    layout.makeShapesFromBlobs();
+    }
     
-    // change musical instrument in Ableton using MIDI Control Change msg
-//    if (dLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//down left
-//        if(canClick[2]){
-//            canClick[2] = false;
-//            if ( ccVal > 0){
-//                ccVal --;
-//            }else{
-//                ccVal= instNum;
-//            }
-//            mout.sendControlChange(1, 119, ccVal);
-//        }
-//    }else{
-//        canClick[2]=true;
-//    }
-//
-//    if (dRight.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//down right
-//        if(canClick[3]){
-//            canClick[3] = false;
-//
-//            ofBackground(255);
-//            if ( ccVal < instNum){
-//                ccVal ++;
-//            }else{
-//                ccVal= 0;
-//            }
-//            mout.sendControlChange(1, 119, ccVal);
-//        }
-//    }else{
-//        canClick[3]=true;
-//    }
-//
 }
 
 
@@ -553,28 +549,27 @@ void ofApp::updateHomography(){
     kinect.update();
     
     if (kinect.isFrameNew()){
-        
-        // creating an image from videos
-        
-        camImage.begin();
-        kinect.draw(0, 0);
-        camImage.end();
-        
-        homo.update(camImage); // processing the original image in the homography class
-        
+
+//        // creating an image from videos
+        ofImage theFrame;
+        theFrame.setFromPixels(kinect.getPixels());
+
+        homo.update(theFrame); // processing the original image in the homography class
+
         //homography update
-        
+
         if (homoUp1 && homoUp2){
-            
+
             mainOut.begin();
             homo.draw(); // drawing out the acual aligned image back
             mainOut.end();
-            
+
             // processing only the actual space i'm at (the screen):
+            
             backDiff.update(mainOut,backDiffThres,minBlob,maxBlob);  /// [ problem number 1!]
             
         }
-        
+
     }// close new frame
     
 }
@@ -633,7 +628,6 @@ void ofApp::keyPressed(int key){
             
             //additional layout options:
             
-       
         case '0':                //open layout maker settings
             isMaker = !isMaker;
             break;
