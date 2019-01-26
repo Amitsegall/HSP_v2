@@ -119,7 +119,7 @@ void ofApp::update(){
 
     updateHomography();
 
-    SelectLayoutInterface(); 
+    SelectLayoutInterface();
 
     musX = ofGetMouseX();
     musY = ofGetMouseY();
