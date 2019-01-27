@@ -17,7 +17,7 @@ void ofApp::setup(){
     chess.load("chess640.jpg");
 
     //init the FBO for homography and tracking
-    mainOut.allocate(1280, 800,GL_RGB); // otherwise the CV will fail - kill the alpah !
+    mainOut.allocate(1280 , 800,GL_RGB); // otherwise the CV will fail - kill the alpah !
     mainOut.begin();
     ofClear(255, 255, 255);
     mainOut.end();
@@ -132,8 +132,10 @@ void ofApp::draw(){
     float s = ofMap(sinTime,-1,1,0,255);
     float c = ofMap(cosTime,-1,1,0,255);
     
+    ofPushStyle();
+    ofSetColor(255);
     backImg.draw(0,0); // draw the backimage with layout texts
-    
+    ofPopStyle();
     
     if (homoUp1 && homoUp2){
         
@@ -148,15 +150,12 @@ void ofApp::draw(){
         
         
         if ( backDiff.contourFinder.blobs.size()>0){ // if there are blobls
-            
+        
             for (int j = 0 ;  j < backDiff.contourFinder.blobs.size(); j++){ // for every blob detected
                 
-                int blobCount = backDiff.contourFinder.blobs.size();
                 blobLocation = backDiff.contourFinder.blobs[j].centroid;
                 blobArea = backDiff.contourFinder.blobs[j].area;
-                
-                checkShapesInLayout(backDiff.myIds[j],blobLocation.x,blobLocation.y,blobArea,s,c,blobCount);
-                
+                checkShapesInLayout(j,blobLocation.x,blobLocation.y,blobArea,s,c);
                 
                 if (blobArea != oldArea){ // check size differenc and make a velocity
                     velocity = abs(blobArea-oldArea);
@@ -213,6 +212,8 @@ void ofApp::draw(){
     if (blobview){ // turn on / off the visual blob
         
         backDiff.draw();
+//        mainOut.draw(0,0);
+//        homo.draw();
         
     }
     
@@ -241,11 +242,12 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 
-void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c,int blobcount){ // this function is the one that sends midi out !
+void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c){ // this function is the one that sends midi out !
     
     int smoothVelocity = ofMap(velocity, 0, 4000, minVel, maxVel,true); // smooth the velocity
     
-    if (blobcount > 1){
+    /// this is for either swipe or polyphony ! choose what you want and fix this section !! 
+    if (backDiff.contourFinder.blobs.size() > 1){
         for (int i = 0; i<layout.myShapes.size();i++){
             
             if (area <= minBlobSize ){
@@ -277,7 +279,6 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
             if (area <= minBlobSize ){
                 
                 if (layout.myShapes[i].inside(x,y)){
-                    
                     
                     if (canPlayNow[i] == true) {
                         colorList[i] = ofColor(255); //change the shape color to white

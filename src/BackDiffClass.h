@@ -12,25 +12,7 @@
 #include <stdio.h>
 #include "ofMain.h"
 #include "ofxOpenCv.h"
-#include "ofxCv.h"
-
-
-class Glow : public ofxCv::RectFollower { // helps finding blob id over time
-protected:
-    ofColor color;
-    ofVec2f cur, smooth;
-    float startedDying;
-    ofPolyline all;
-public:
-    Glow()
-    :startedDying(0) {
-    }
-    void setup(const cv::Rect& track);
-    void update(const cv::Rect& track);
-    void kill();
-    int retLabel();
-    ofPoint retLoc();
-};
+//#include "ofxCv.h"
 
 
 class BackDiff {
@@ -46,22 +28,11 @@ class BackDiff {
     ofxCvGrayscaleImage 	grayImage;
     ofxCvGrayscaleImage 	grayBg;
     ofxCvGrayscaleImage 	grayDiff;
-    ofxCvGrayscaleImage     mask;
     ofxCvGrayscaleImage     blurred;
 
     
     ofxCvContourFinder 	contourFinder;
     ofImage myImage;
-
-    
-    // ofxCV
-    ofxCv::ContourFinder contourFinder2;
-    ofxCv::RectTrackerFollower<Glow> tracker;
-    
-    
-    vector <int> myIds;
-    vector <ofPoint> myLocs;
-    
     
 };
 

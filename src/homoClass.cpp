@@ -92,7 +92,7 @@ void HomoClass::draw(){
 
     if(homographyReady) {
         
-        warpedColor.draw(0, 0,ofGetWidth(),ofGetHeight()); // drawing and resizing at the same time
+        warpedColor.draw(0, 0,1280,800); // drawing and resizing at the same time
 
     }else {
         // while setting up the homography
