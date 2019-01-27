@@ -133,12 +133,11 @@ class ofApp : public ofBaseApp{
     void drawHomography();
     
     ofImage chess,initImage,camImg;
-    ofFbo camImage;
     ofFbo mainOut;
-    
+
     
     ofPixels currentPixels,outPixels;
-    void initImg(ofFbo input);
+    void initImg(ofImage input);
     bool liveCam;
     
     

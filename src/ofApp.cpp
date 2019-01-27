@@ -17,9 +17,6 @@ void ofApp::setup(){
     chess.load("chess640.jpg");
 
     //init the FBO for homography and tracking
-
-    initImage.allocate(w, h,ofImageType::OF_IMAGE_COLOR_ALPHA);
-
     mainOut.allocate(1280, 800,GL_RGB); // otherwise the CV will fail - kill the alpah !
     mainOut.begin();
     ofClear(255, 255, 255);
@@ -551,10 +548,10 @@ void ofApp::updateHomography(){
     if (kinect.isFrameNew()){
 
 //        // creating an image from videos
-        ofImage theFrame;
-        theFrame.setFromPixels(kinect.getPixels());
+        
+        camImg.setFromPixels(kinect.getPixels());
 
-        homo.update(theFrame); // processing the original image in the homography class
+        homo.update(camImg); // processing the original image in the homography class
 
         //homography update
 
@@ -578,10 +575,9 @@ void ofApp::updateHomography(){
 //--------------------------------------------------------------
 
 
-void ofApp::initImg(ofFbo input){
-    ofPixels locPix;
-    input.readToPixels(locPix);
-    initImage.setFromPixels(locPix);
+void ofApp::initImg(ofImage input){
+
+    initImage.setFromPixels(input.getPixels());
     ofSaveImage(initImage,"init.png");
 }
 
@@ -598,7 +594,7 @@ void ofApp::keyPressed(int key){
             chess.resize(ofGetWidth(), ofGetHeight());
             break;
         case '2' : // capture a new image from the camera and save cam settings
-            initImg(camImage);
+            initImg(camImg);
             break;
         case '3': // setup both images in the homography class
             homo.setup("chess640.jpg","init.png"); // setting up the chessboard and the image of the space(init)
