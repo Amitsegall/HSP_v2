@@ -61,7 +61,7 @@ class ofApp : public ofBaseApp{
     void SelectLayoutInterface();
     void drawTheShape(int ShapeNum);
     void drawTheInterface();
-    void checkShapesInLayout(int blobNumber, int x, int y, int area,int s, int c);
+    void checkShapesInLayout(int blobNumber, int x, int y, int area,int s, int c,int placeInLine);
     
     //layout maker editor
     ofxPanel maker;

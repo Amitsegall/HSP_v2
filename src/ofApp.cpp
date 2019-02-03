@@ -153,7 +153,8 @@ void ofApp::draw(){
                 blobArea = backDiff.myArea[j];
                 int id = backDiff.myIds[j];
                 
-                checkShapesInLayout(id,blobLocation.x,blobLocation.y,blobArea,s,c); /// this is is where it begins
+                
+                checkShapesInLayout(id,blobLocation.x,blobLocation.y,blobArea,s,c,j); /// this is is where it begins
                 
                 if (blobArea != oldArea){ // check size differenc and make a velocity
                     velocity = abs(blobArea-oldArea);
@@ -186,7 +187,7 @@ void ofApp::draw(){
         }
         
         
-        if (backDiff.contourFinder2.size() == 0){ // make sure there are no stuck notes
+        if (backDiff.contourFinder2.size() == 0){ // make sure there are no stuck notes - something cause problems as well/ maybe fix
             for (int i = 0; i<128;i++){
                 mout.mout.sendNoteOff(1, i,0);
             }
@@ -198,10 +199,7 @@ void ofApp::draw(){
         
         
         playWithMouse();
-        drawTheInterface();  /// [ problem number 2!]
-        // new approach for playing polyphonic -- having a list after checking all blobs
-        
-      
+        drawTheInterface();
         
         
     } else { //if homography not worked
@@ -270,12 +268,20 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 
-void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c){
+void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c,int placeInLine){
 
     int smoothVelocity = ofMap(velocity, 0, 4000, minVel, maxVel,true); // smooth the velocity  int
     
     for (int i = 0; i<layout.myShapes.size();i++){
+        
         if (area <= minBlobSize && layout.myShapes[i].inside(x,y)){
+            
+            //expriment with expression!
+            int ccVal = ofMap(y, layout.myShapes[i].getBoundingBox().getMinY(), layout.myShapes[i].getBoundingBox().getMaxY(), 127,40);
+            mout.mout.sendControlChange(1,1, ccVal);
+            mout.mout.sendPolyAftertouch(1, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
+            
+            
             if (bigList.size() == 0) {
 //                cout<<"first item in list!"<<endl;
                 ofPoint merge;
@@ -304,6 +310,9 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
             }
             
         }else{ //// if the condition is failed
+            
+//            ccVal = 0;
+            
             for (int x = 0; x < bigList.size();x++){
                 if (bigList[x].x == blobId){
                     if(bigList[x].z == 0 && bigList[x].y == i){// if the item can't play and shape is different
@@ -322,7 +331,6 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
             }
         }// faild condition
         
-
     }// for every shape
     
 }// end of function
@@ -488,7 +496,7 @@ void ofApp::layoutColor(int i, int val2,int val3){
 
 //--------------------------------------------------------------
 
-void ofApp::SelectLayoutInterface(){ //// at the moment this funcion is causing problems ! fix before use
+void ofApp::SelectLayoutInterface(){
     
     bool change = false;
     
@@ -589,7 +597,7 @@ void ofApp::updateHomography(){
 
             // processing only the actual space i'm at (the screen):
             
-            backDiff.update(mainOut,backDiffThres,minBlob,maxBlob);  /// [ problem number 1!]
+            backDiff.update(mainOut,backDiffThres,minBlob,maxBlob);
             
         }
 
