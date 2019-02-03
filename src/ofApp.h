@@ -43,7 +43,11 @@ class ofApp : public ofBaseApp{
     // midi out
     MidiOutClass mout;
     int ccVal;
-    vector<bool>canPlayNow;
+    
+    vector<int> listOfNotes;
+    vector<ofPoint>bigList; // storing x = id , y = shape/note, z = can play 0/1. 
+    
+    
     
     int instNum;
     int oldArea; //helps calculate velocity

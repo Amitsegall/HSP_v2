@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include "ofMain.h"
 #include "ofxOpenCv.h"
-//#include "ofxCv.h"
+#include "ofxCv.h"
 
 
 class BackDiff {
@@ -33,6 +33,14 @@ class BackDiff {
     
     ofxCvContourFinder 	contourFinder;
     ofImage myImage;
+    
+    // ofxCV - for ID tracking
+    ofxCv::ContourFinder contourFinder2;
+
+    
+    //storing ID and location
+    vector <int> myIds,myArea;
+    vector <ofPoint> myLocs;
     
 };
 

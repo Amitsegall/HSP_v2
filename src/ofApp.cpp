@@ -99,14 +99,11 @@ void ofApp::setup(){
     velocity = 100;
     mout.sendControlChange(1, 119, ccVal);
 
-    //initialize playing options!
-    canPlayNow.resize(4);
-    for (int i = 0;i<canPlayNow.size();i++){
-        canPlayNow[i]=true;
-    }
-
     instNum = 19; // set to max - 1;
     colorCheck = 1; // any number that is not zero
+
+    bigList.clear();
+    listOfNotes.clear();
     
 }
 
@@ -149,31 +146,62 @@ void ofApp::draw(){
         }
         
         
-        if ( backDiff.contourFinder.blobs.size()>0){ // if there are blobls
+        if ( backDiff.contourFinder2.size()>0){ // if there are blobls
         
-            for (int j = 0 ;  j < backDiff.contourFinder.blobs.size(); j++){ // for every blob detected
+            for (int j = 0 ;  j < backDiff.contourFinder2.size(); j++){ // for every blob detected
+                blobLocation = backDiff.myLocs[j];
+                blobArea = backDiff.myArea[j];
+                int id = backDiff.myIds[j];
                 
-                blobLocation = backDiff.contourFinder.blobs[j].centroid;
-                blobArea = backDiff.contourFinder.blobs[j].area;
-                checkShapesInLayout(j,blobLocation.x,blobLocation.y,blobArea,s,c);
+                checkShapesInLayout(id,blobLocation.x,blobLocation.y,blobArea,s,c); /// this is is where it begins
                 
                 if (blobArea != oldArea){ // check size differenc and make a velocity
                     velocity = abs(blobArea-oldArea);
                 }
-                
+             
             }//for every blob detected loop
             
-            
+          
         }else{
             for (int i = 0; i<layout.myShapes.size();i++){
                 layoutColor(i,s,c);
             }
         }// if blob detected
         
+      
+        /// new approach for playing polyphonic
+        if (bigList.size()>0) { // if there are notes in list to play
+            
+            for (int i = 0;  i< bigList.size();i++) {
+                
+                if (bigList[i].z == 1){
+                    
+                    layoutToNotes(bigList[i].y, 100); // currently fixed velocity
+                    colorList[bigList[i].y] = ofColor(255);
+                    bigList[i].z = 0; // bool so you can't play more than once.
+//                    cout<<"just played note number "<<bigList[i].y <<endl;
+                    
+                } // if not in played
+            } // for list of notes
+        }
+        
+        
+        if (backDiff.contourFinder2.size() == 0){ // make sure there are no stuck notes
+            for (int i = 0; i<128;i++){
+                mout.mout.sendNoteOff(1, i,0);
+            }
+            bigList.clear();
+            listOfNotes.clear();
+        } // if the list big
+        
+        
+        
         
         playWithMouse();
         drawTheInterface();  /// [ problem number 2!]
+        // new approach for playing polyphonic -- having a list after checking all blobs
         
+      
         
         
     } else { //if homography not worked
@@ -242,65 +270,62 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 
-void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c){ // this function is the one that sends midi out !
+void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c){
+
+    int smoothVelocity = ofMap(velocity, 0, 4000, minVel, maxVel,true); // smooth the velocity  int
     
-    int smoothVelocity = ofMap(velocity, 0, 4000, minVel, maxVel,true); // smooth the velocity
-    
-    /// this is for either swipe or polyphony ! choose what you want and fix this section !! 
-    if (backDiff.contourFinder.blobs.size() > 1){
-        for (int i = 0; i<layout.myShapes.size();i++){
-            
-            if (area <= minBlobSize ){
+    for (int i = 0; i<layout.myShapes.size();i++){
+        if (area <= minBlobSize && layout.myShapes[i].inside(x,y)){
+            if (bigList.size() == 0) {
+//                cout<<"first item in list!"<<endl;
+                ofPoint merge;
+                merge.x = blobId; // id
+                merge.y = i; // shape num
+                merge.z = 1; // canPlayBool
+                bigList.push_back(merge);
+                listOfNotes.push_back(i);
+//                cout<<"list size is "<<bigList.size()<<endl;
                 
-                if (layout.myShapes[i].inside(x,y)){
-                    
-                    
-                    if (canPlayNow[blobId] == true) {
-                        colorList[i] = ofColor(255); //change the shape color to white
-                        layoutToNotes(i, smoothVelocity); //play the note
-                        canPlayNow[blobId] = false; // make sure you can only play one note
-                        
-                    }
-                    
+            }else{ // if list is 1 or more // polyphony
+                
+                if (std::find(std::begin(listOfNotes),std::end(listOfNotes), i) != std::end(listOfNotes)) {
+                    // if item is inside don't do anything
                 }else{
-                    layoutColor(i,s,c);// leave the color as it was in the original list on all other shape
+//                    cout<<"Adding new item to the list ! "<<endl;
+                    ofPoint merge;
+                    merge.x = blobId; // id
+                    merge.y = i; // shape num
+                    merge.z = 1; // canPlayBool
+                    bigList.push_back(merge);
+                    listOfNotes.push_back(i);
+//                    cout<<"list size is "<<bigList.size()<<endl;
+//                    cout<<"list should be "<<x
                 }
-                //             canPlayNow[i] = true;
-            }else{
-                canPlayNow[blobId] = true;
             }
             
-            
-        } // for every shape in the layout
-    }else{
+        }else{ //// if the condition is failed
+            for (int x = 0; x < bigList.size();x++){
+                if (bigList[x].x == blobId){
+                    if(bigList[x].z == 0 && bigList[x].y == i){// if the item can't play and shape is different
+//                    cout<<"removing item form list "<<endl;
+                    int noteOff = bigList[x].y;
+                    mout.mout.sendNoteOff(1, jsLayouts["layouts"][layout.currentImage]["notes"][noteOff].asInt());
+                    //            layoutColor(i,c ,s);
+                    bigList.erase(bigList.begin()+x);
+                    listOfNotes.erase(listOfNotes.begin()+x);
+                    }
+                }
+            }
+            if (std::find(std::begin(listOfNotes),std::end(listOfNotes), i) != std::end(listOfNotes)) {// if item is inside don't do anything)
+            }else{
+            layoutColor(i,c ,s); // change color to all other shapes
+            }
+        }// faild condition
         
-        for (int i = 0; i<layout.myShapes.size();i++){
-            
-            if (area <= minBlobSize ){
-                
-                if (layout.myShapes[i].inside(x,y)){
-                    
-                    if (canPlayNow[i] == true) {
-                        colorList[i] = ofColor(255); //change the shape color to white
-                        layoutToNotes(i, smoothVelocity); //play the note
-                        canPlayNow[i] = false; // make sure you can only play one note
-                        
-                    }
-                    
-                }else{
-                    layoutColor(i,s,c);// leave the color as it was in the original list on all other shape
-                }
-                //             canPlayNow[i] = true;
-            }else{
-                canPlayNow[i] = true;
-            }
-            
-            
-        }
-    }
+
+    }// for every shape
     
 }// end of function
-
 
 //--------------------------------------------------------------
 void ofApp::playWithMouse(){
@@ -365,7 +390,7 @@ void ofApp::drawTheShape(int shapeNum){
 //--------------------------------------------------------------
 void ofApp::layoutToNotes(int note, int velocity){
     
-    mout.sendNoteOn(1, jsLayouts["layouts"][layout.currentImage]["notes"][note].asInt(), velocity, 1000);
+    mout.mout.sendNoteOn(1, jsLayouts["layouts"][layout.currentImage]["notes"][note].asInt(), velocity);
     
 }
 
