@@ -94,17 +94,17 @@ void ofApp::setup(){
     musClicked = false; //check mouse click
 
     // Midi setup
-    mout.setup();
+    midi.openPort(0);
     ccVal = 0;
     velocity = 100;
-    mout.sendControlChange(1, 119, ccVal);
+    midi.sendControlChange(1, 119, ccVal);
 
     instNum = 19; // set to max - 1;
     colorCheck = 1; // any number that is not zero
 
     bigList.clear();
     listOfNotes.clear();
-    
+    cleanNotes = false;
 }
 
 
@@ -122,7 +122,7 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-
+//    bool cleanNotes = false;
 //    make the colors move later
     float sinTime = sin(ofDegToRad(ofGetFrameNum()));
     float cosTime = cos(ofDegToRad(ofGetFrameNum()));
@@ -151,10 +151,9 @@ void ofApp::draw(){
             for (int j = 0 ;  j < backDiff.contourFinder2.size(); j++){ // for every blob detected
                 blobLocation = backDiff.myLocs[j];
                 blobArea = backDiff.myArea[j];
-                int id = backDiff.myIds[j];
-                
-                
-                checkShapesInLayout(id,blobLocation.x,blobLocation.y,blobArea,s,c,j); /// this is is where it begins
+                activeBlobId = backDiff.myIds[j];
+                activeMidiCh = (activeBlobId%14)+2;
+                checkShapesInLayout(activeBlobId,blobLocation.x,blobLocation.y,blobArea,s,c,j); /// this is is where it begins
                 
                 if (blobArea != oldArea){ // check size differenc and make a velocity
                     velocity = abs(blobArea-oldArea);
@@ -162,7 +161,8 @@ void ofApp::draw(){
              
             }//for every blob detected loop
             
-          
+            cleanNotes = true;
+       
         }else{
             for (int i = 0; i<layout.myShapes.size();i++){
                 layoutColor(i,s,c);
@@ -170,7 +170,8 @@ void ofApp::draw(){
         }// if blob detected
         
       
-        /// new approach for playing polyphonic
+        /// new approach for playing polyphonic:
+        
         if (bigList.size()>0) { // if there are notes in list to play
             
             for (int i = 0;  i< bigList.size();i++) {
@@ -180,25 +181,24 @@ void ofApp::draw(){
                     layoutToNotes(bigList[i].y, 100); // currently fixed velocity
                     colorList[bigList[i].y] = ofColor(255);
                     bigList[i].z = 0; // bool so you can't play more than once.
-//                    cout<<"just played note number "<<bigList[i].y <<endl;
                     
                 } // if not in played
             } // for list of notes
         }
         
-        
-        if (backDiff.contourFinder2.size() == 0){ // make sure there are no stuck notes - something cause problems as well/ maybe fix
+        if (backDiff.contourFinder2.size() == 0 && cleanNotes == true){
+
             for (int i = 0; i<128;i++){
-                mout.mout.sendNoteOff(1, i,0);
+                midi.sendNoteOff(1, i,0);
+             
             }
             bigList.clear();
             listOfNotes.clear();
+            cleanNotes = false;
+            //            cout<<"cleaning..."<<endl;
         } // if the list big
-        
-        
-        
-        
-        playWithMouse();
+//
+//        playWithMouse();
         drawTheInterface();
         
         
@@ -278,9 +278,11 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
             
             //expriment with expression!
             int ccVal = ofMap(y, layout.myShapes[i].getBoundingBox().getMinY(), layout.myShapes[i].getBoundingBox().getMaxY(), 127,40);
-            mout.mout.sendControlChange(1,1, ccVal);
-            mout.mout.sendPolyAftertouch(1, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
-            
+            int pbVal = ofMap(x, layout.myShapes[i].getBoundingBox().getMinX(), layout.myShapes[i].getBoundingBox().getMaxX(), 0, 16383);
+            midi.sendControlChange(activeMidiCh,1, ccVal);
+            midi.sendPolyAftertouch(activeMidiCh, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
+            midi.sendPitchBend(activeMidiCh, pbVal);
+//
             
             if (bigList.size() == 0) {
 //                cout<<"first item in list!"<<endl;
@@ -318,7 +320,9 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
                     if(bigList[x].z == 0 && bigList[x].y == i){// if the item can't play and shape is different
 //                    cout<<"removing item form list "<<endl;
                     int noteOff = bigList[x].y;
-                    mout.mout.sendNoteOff(1, jsLayouts["layouts"][layout.currentImage]["notes"][noteOff].asInt());
+                        int locId = bigList[x].x;
+                        int locMidiCh = (locId%14)+2;
+                    midi.sendNoteOff(locMidiCh, jsLayouts["layouts"][layout.currentImage]["notes"][noteOff].asInt());
                     //            layoutColor(i,c ,s);
                     bigList.erase(bigList.begin()+x);
                     listOfNotes.erase(listOfNotes.begin()+x);
@@ -398,7 +402,8 @@ void ofApp::drawTheShape(int shapeNum){
 //--------------------------------------------------------------
 void ofApp::layoutToNotes(int note, int velocity){
     
-    mout.mout.sendNoteOn(1, jsLayouts["layouts"][layout.currentImage]["notes"][note].asInt(), velocity);
+    
+    midi.sendNoteOn(activeMidiCh, jsLayouts["layouts"][layout.currentImage]["notes"][note].asInt(), velocity);
     
 }
 
@@ -515,7 +520,7 @@ void ofApp::SelectLayoutInterface(){
                 }
             }
             ccVal = layout.currentImage;
-            mout.sendControlChange(1, 119, ccVal);
+            midi.sendControlChange(1, 119, ccVal);
         }else{
             canClick[0]=true;
         }
@@ -529,7 +534,7 @@ void ofApp::SelectLayoutInterface(){
                 layout.currentImage %= layout.dir.size();
             }
             ccVal = layout.currentImage;
-            mout.sendControlChange(1, 119, ccVal);
+            midi.sendControlChange(1, 119, ccVal);
         }else{
             canClick[1]=true;
         }
@@ -544,7 +549,7 @@ void ofApp::SelectLayoutInterface(){
             }else{
                 ccVal= instNum;
             }
-            mout.sendControlChange(1, 119, ccVal);
+            midi.sendControlChange(1, 119, ccVal);
         }
     }else{
         canClick[2]=true;
@@ -559,7 +564,7 @@ void ofApp::SelectLayoutInterface(){
             }else{
                 ccVal= 0;
             }
-            mout.sendControlChange(1, 119, ccVal);
+            midi.sendControlChange(1, 119, ccVal);
         }
     }else{
         canClick[3]=true;
@@ -669,7 +674,7 @@ void ofApp::keyPressed(int key){
                 layout.currentImage %= layout.dir.size();
             }
             ccVal = layout.currentImage;
-            mout.sendControlChange(1, 119, ccVal);
+            midi.sendControlChange(1, 119, ccVal);
             layout.cleanShapes();
             layout.findShapesInImage(layout.images[layout.currentImage]);
             layout.makeShapesFromBlobs();

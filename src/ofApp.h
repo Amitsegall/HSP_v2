@@ -4,18 +4,15 @@
 #include "ofxKinect.h"
 #include "ofxGui.h"
 #include "ofxJson.h"
-
+#include "ofxMidi.h"
 
 //my classes to make nice code:
 
 //layout maker and midi playback
-#include "midiOutClass.h"
 #include "layoutMaker.h"
 // homograpy and tracking
 #include "homoClass.h"
 #include "BackDiffClass.h"
-
-
 
 #include <algorithm> // for std::find
 #include <iterator> // for std::begin, std::end
@@ -41,12 +38,12 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
     
     // midi out
-    MidiOutClass mout;
+    ofxMidiOut midi;
     int ccVal;
-    
+    bool cleanNotes;
+    int activeBlobId, activeMidiCh;
     vector<int> listOfNotes;
     vector<ofPoint>bigList; // storing x = id , y = shape/note, z = can play 0/1. 
-    
     
     
     int instNum;
@@ -123,8 +120,6 @@ class ofApp : public ofBaseApp{
     ofParameter<int> maxBlob;
     ofParameter<int> minVel;
     ofParameter<int> maxVel;
-    
-    
     
     ofxToggle blobview;
     
