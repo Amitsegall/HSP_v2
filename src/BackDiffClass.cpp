@@ -86,16 +86,14 @@ void BackDiff::draw(){
     
     contourFinder.draw();
     
-   
-    
     // drawing the ID
-    for (int i = 0; i < contourFinder2.size();i++){
-        ofPushStyle();
-        ofSetColor(255,0,0);
-        
-        ofDrawBitmapString(myIds[i],myLocs[i].x,myLocs[i].y);
-        ofPopStyle();
-    }
+//    for (int i = 0; i < contourFinder2.size();i++){
+//        ofPushStyle();
+//        ofSetColor(255,0,0);
+//
+//        ofDrawBitmapString(myIds[i],myLocs[i].x,myLocs[i].y);
+//        ofPopStyle();
+//    }
 
 }
 

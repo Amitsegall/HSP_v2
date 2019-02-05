@@ -282,6 +282,7 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
             midi.sendControlChange(activeMidiCh,1, ccVal);
             midi.sendPolyAftertouch(activeMidiCh, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
             midi.sendPitchBend(activeMidiCh, pbVal);
+            
 //
             
             if (bigList.size() == 0) {
