@@ -46,6 +46,10 @@ void ofApp::setup(){
     gui.add(maxBlob.set("Max Blob size", 3000, 3000, 18000));
     gui.add(minVel.set("Min Velocity",0,0,127));
     gui.add(maxVel.set("Max Velocity",127,0,127));
+    gui.add(MinForPitch.set("Min Shape Pitch-x",100,10,500));
+    gui.add(MinForAfter.set("Min Shape After-y",100,10,500));
+    gui.add(MinForCC.set("Min Shape CC-z",100,10,500));
+    
 
     blobview.setup("Display the Blob",true);
     gui.add(&blobview);
@@ -187,15 +191,15 @@ void ofApp::draw(){
         }
         
         if (backDiff.contourFinder2.size() == 0 && cleanNotes == true){
-
-            for (int i = 0; i<128;i++){
-                midi.sendNoteOff(1, i,0);
-             
+            for (int x= 1; x<=16;x++){ // select Midi Ch.
+                for (int i = 0; i<128;i++){ // select Note
+                midi.sendNoteOff(x, i,0);
+                }
             }
             bigList.clear();
             listOfNotes.clear();
             cleanNotes = false;
-            //            cout<<"cleaning..."<<endl;
+            
         } // if the list big
 //
 //        playWithMouse();
@@ -279,11 +283,17 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
             //expriment with expression!
             int ccVal = ofMap(y, layout.myShapes[i].getBoundingBox().getMinY(), layout.myShapes[i].getBoundingBox().getMaxY(), 127,40);
             int pbVal = ofMap(x, layout.myShapes[i].getBoundingBox().getMinX(), layout.myShapes[i].getBoundingBox().getMaxX(), 0, 16383);
+
             midi.sendControlChange(activeMidiCh,1, ccVal);
-            midi.sendPolyAftertouch(activeMidiCh, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
-            midi.sendPitchBend(activeMidiCh, pbVal);
             
-//
+             if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY())  > MinForAfter){ // threshold for aftertouch
+            midi.sendPolyAftertouch(activeMidiCh, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
+             }
+            
+            if ((layout.myShapes[i].getBoundingBox().getMaxX() - layout.myShapes[i].getBoundingBox().getMinX())  > MinForPitch){ // threshold for pitchband
+            midi.sendPitchBend(activeMidiCh, pbVal);
+            }
+
             
             if (bigList.size() == 0) {
 //                cout<<"first item in list!"<<endl;
@@ -293,33 +303,29 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
                 merge.z = 1; // canPlayBool
                 bigList.push_back(merge);
                 listOfNotes.push_back(i);
-//                cout<<"list size is "<<bigList.size()<<endl;
                 
             }else{ // if list is 1 or more // polyphony
                 
                 if (std::find(std::begin(listOfNotes),std::end(listOfNotes), i) != std::end(listOfNotes)) {
                     // if item is inside don't do anything
                 }else{
-//                    cout<<"Adding new item to the list ! "<<endl;
+
                     ofPoint merge;
                     merge.x = blobId; // id
                     merge.y = i; // shape num
                     merge.z = 1; // canPlayBool
                     bigList.push_back(merge);
                     listOfNotes.push_back(i);
-//                    cout<<"list size is "<<bigList.size()<<endl;
-//                    cout<<"list should be "<<x
+
                 }
             }
             
         }else{ //// if the condition is failed
             
-//            ccVal = 0;
-            
             for (int x = 0; x < bigList.size();x++){
                 if (bigList[x].x == blobId){
                     if(bigList[x].z == 0 && bigList[x].y == i){// if the item can't play and shape is different
-//                    cout<<"removing item form list "<<endl;
+                    //cout<<"removing item form list "<<endl;
                     int noteOff = bigList[x].y;
                         int locId = bigList[x].x;
                         int locMidiCh = (locId%14)+2;
@@ -522,6 +528,7 @@ void ofApp::SelectLayoutInterface(){
             }
             ccVal = layout.currentImage;
             midi.sendControlChange(1, 119, ccVal);
+            midi.sendProgramChange(1, ccVal);
         }else{
             canClick[0]=true;
         }
@@ -536,6 +543,7 @@ void ofApp::SelectLayoutInterface(){
             }
             ccVal = layout.currentImage;
             midi.sendControlChange(1, 119, ccVal);
+            midi.sendProgramChange(1, ccVal);
         }else{
             canClick[1]=true;
         }

@@ -120,6 +120,9 @@ class ofApp : public ofBaseApp{
     ofParameter<int> maxBlob;
     ofParameter<int> minVel;
     ofParameter<int> maxVel;
+    ofParameter<int> MinForPitch;
+    ofParameter<int> MinForAfter;
+    ofParameter<int> MinForCC;
     
     ofxToggle blobview;
     
