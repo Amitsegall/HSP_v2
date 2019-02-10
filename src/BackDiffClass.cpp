@@ -63,6 +63,8 @@ void BackDiff::update(ofFbo myImage, int threshold, int minArea, int maxArea){
     
     //for id tracking
     contourFinder2.findContours(grayDiff);
+    contourFinder2.setMaxArea(maxArea);
+    contourFinder2.setMinArea(minArea);
 
     // for allocating location and id each time.
     myIds.resize(contourFinder2.size());

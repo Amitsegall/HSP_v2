@@ -156,7 +156,7 @@ void ofApp::draw(){
                 blobLocation = backDiff.myLocs[j];
                 blobArea = backDiff.myArea[j];
                 activeBlobId = backDiff.myIds[j];
-                activeMidiCh = (activeBlobId%14)+2;
+                activeMidiCh = (activeBlobId%14)+2; // play notes in ch 2-16
                 checkShapesInLayout(activeMidiCh,blobLocation.x,blobLocation.y,blobArea,s,c,j); /// this is is where it begins
                 
                 if (blobArea != oldArea){ // check size differenc and make a velocity

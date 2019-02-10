@@ -3,8 +3,8 @@
 	<Layout_Threshold>80</Layout_Threshold>
 	<Back_Diff_Threshold>84</Back_Diff_Threshold>
 	<Blur_value>0</Blur_value>
-	<Blob_Size_Hit>5550</Blob_Size_Hit>
-	<Min_Blob_min>2949</Min_Blob_min>
+	<Blob_Size_Hit>1800</Blob_Size_Hit>
+	<Min_Blob_min>750</Min_Blob_min>
 	<Max_Blob_size>18000</Max_Blob_size>
 	<Min_Velocity>70</Min_Velocity>
 	<Max_Velocity>127</Max_Velocity>
