@@ -285,7 +285,8 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
             midi.sendControlChange(blobId,1, ccVal);
             
              if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY())  > MinForAfter){ // threshold for aftertouch
-            midi.sendPolyAftertouch(blobId, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
+//            midi.sendPolyAftertouch(blobId, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
+                 midi.sendAftertouch(blobId, ccVal); // just sending AF to differnet channels all the time
              }
             
             if ((layout.myShapes[i].getBoundingBox().getMaxX() - layout.myShapes[i].getBoundingBox().getMinX())  > MinForPitch){ // threshold for pitchband
