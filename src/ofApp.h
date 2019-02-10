@@ -104,7 +104,7 @@ class ofApp : public ofBaseApp{
     
     ofColor coolCol;
     
-    void layoutToNotes(int note, int velocity);
+    void layoutToNotes(int ch, int note, int velocity);
     void layoutColor(int val1, int val2,int val3);
     
     //kinect cam

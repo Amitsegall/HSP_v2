@@ -157,7 +157,7 @@ void ofApp::draw(){
                 blobArea = backDiff.myArea[j];
                 activeBlobId = backDiff.myIds[j];
                 activeMidiCh = (activeBlobId%14)+2;
-                checkShapesInLayout(activeBlobId,blobLocation.x,blobLocation.y,blobArea,s,c,j); /// this is is where it begins
+                checkShapesInLayout(activeMidiCh,blobLocation.x,blobLocation.y,blobArea,s,c,j); /// this is is where it begins
                 
                 if (blobArea != oldArea){ // check size differenc and make a velocity
                     velocity = abs(blobArea-oldArea);
@@ -175,14 +175,14 @@ void ofApp::draw(){
         
       
         /// new approach for playing polyphonic:
-        
+     
         if (bigList.size()>0) { // if there are notes in list to play
             
             for (int i = 0;  i< bigList.size();i++) {
                 
                 if (bigList[i].z == 1){
                     
-                    layoutToNotes(bigList[i].y, 100); // currently fixed velocity
+                    layoutToNotes(bigList[i].x,bigList[i].y, 100); // currently fixed velocity
                     colorList[bigList[i].y] = ofColor(255);
                     bigList[i].z = 0; // bool so you can't play more than once.
                     
@@ -193,16 +193,16 @@ void ofApp::draw(){
         if (backDiff.contourFinder2.size() == 0 && cleanNotes == true){
             for (int x= 1; x<=16;x++){ // select Midi Ch.
                 for (int i = 0; i<128;i++){ // select Note
-                midi.sendNoteOff(x, i,0);
+                midi.sendNoteOn(x, i,0);
                 }
             }
             bigList.clear();
             listOfNotes.clear();
             cleanNotes = false;
-            
+
         } // if the list big
-//
-//        playWithMouse();
+
+        playWithMouse(); /// mostly for testing
         drawTheInterface();
         
         
@@ -242,8 +242,6 @@ void ofApp::draw(){
     if (blobview){ // turn on / off the visual blob
         
         backDiff.draw();
-//        mainOut.draw(0,0);
-//        homo.draw();
         
     }
     
@@ -284,14 +282,14 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
             int ccVal = ofMap(y, layout.myShapes[i].getBoundingBox().getMinY(), layout.myShapes[i].getBoundingBox().getMaxY(), 127,40);
             int pbVal = ofMap(x, layout.myShapes[i].getBoundingBox().getMinX(), layout.myShapes[i].getBoundingBox().getMaxX(), 0, 16383);
 
-            midi.sendControlChange(activeMidiCh,1, ccVal);
+            midi.sendControlChange(blobId,1, ccVal);
             
              if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY())  > MinForAfter){ // threshold for aftertouch
-            midi.sendPolyAftertouch(activeMidiCh, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
+            midi.sendPolyAftertouch(blobId, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
              }
             
             if ((layout.myShapes[i].getBoundingBox().getMaxX() - layout.myShapes[i].getBoundingBox().getMinX())  > MinForPitch){ // threshold for pitchband
-            midi.sendPitchBend(activeMidiCh, pbVal);
+            midi.sendPitchBend(blobId, pbVal);
             }
 
             
@@ -308,6 +306,7 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
                 
                 if (std::find(std::begin(listOfNotes),std::end(listOfNotes), i) != std::end(listOfNotes)) {
                     // if item is inside don't do anything
+                    
                 }else{
 
                     ofPoint merge;
@@ -323,17 +322,18 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
         }else{ //// if the condition is failed
             
             for (int x = 0; x < bigList.size();x++){
+                
                 if (bigList[x].x == blobId){
+                    
                     if(bigList[x].z == 0 && bigList[x].y == i){// if the item can't play and shape is different
-                    //cout<<"removing item form list "<<endl;
+//                    cout<<"removing item form list "<<endl;
                     int noteOff = bigList[x].y;
-                        int locId = bigList[x].x;
-                        int locMidiCh = (locId%14)+2;
-                    midi.sendNoteOff(locMidiCh, jsLayouts["layouts"][layout.currentImage]["notes"][noteOff].asInt());
-                    //            layoutColor(i,c ,s);
+                    int locId = bigList[x].x;
+                    midi.sendNoteOn(locId, jsLayouts["layouts"][layout.currentImage]["notes"][noteOff].asInt(),0);
                     bigList.erase(bigList.begin()+x);
                     listOfNotes.erase(listOfNotes.begin()+x);
                     }
+                    
                 }
             }
             if (std::find(std::begin(listOfNotes),std::end(listOfNotes), i) != std::end(listOfNotes)) {// if item is inside don't do anything)
@@ -353,7 +353,7 @@ void ofApp::playWithMouse(){
         
         if (layout.myShapes[i].inside(musX, musY) && musClicked){
             colorList[i] = ofColor(255); //change the shape color to white
-            layoutToNotes(i, 100); //play the note
+            layoutToNotes(1,i, 100); //play the note
             
         }
     }
@@ -407,10 +407,10 @@ void ofApp::drawTheShape(int shapeNum){
 
 
 //--------------------------------------------------------------
-void ofApp::layoutToNotes(int note, int velocity){
+void ofApp::layoutToNotes(int ch, int note, int velocity){
     
     
-    midi.sendNoteOn(activeMidiCh, jsLayouts["layouts"][layout.currentImage]["notes"][note].asInt(), velocity);
+    midi.sendNoteOn(ch, jsLayouts["layouts"][layout.currentImage]["notes"][note].asInt(), velocity);
     
 }
 
