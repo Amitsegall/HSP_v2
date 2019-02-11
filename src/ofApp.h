@@ -115,7 +115,7 @@ class ofApp : public ofBaseApp{
     ofParameter<int> layThres;
     ofParameter<int> backDiffThres;
     ofParameter<int> blurVal;
-    ofParameter<int> minBlobSize;
+    ofParameter<int> blobHit;
     ofParameter<int> minBlob;
     ofParameter<int> maxBlob;
     ofParameter<int> minVel;

@@ -41,15 +41,16 @@ void ofApp::setup(){
 //    //Gui
     gui.setup();
     gui.add(backDiffThres.set("Back Diff Threshold", 70, 0, 200));
-    gui.add(minBlobSize.set("Blob Size Hit", 5000, 0, 10000));
+    gui.add(blobHit.set("Blob Hit Size", 5000, 0, 10000));
     gui.add(minBlob.set("Min Blob min", 0, 0, 10000));
     gui.add(maxBlob.set("Max Blob size", 3000, 3000, 18000));
     gui.add(minVel.set("Min Velocity",0,0,127));
     gui.add(maxVel.set("Max Velocity",127,0,127));
     gui.add(MidiMpeCh.set("MIDI MPE Ch Count",6,1,15));
     gui.add(MinForPitch.set("Min Shape Pitch-x",100,10,500));
-    gui.add(MinForAfter.set("Min Shape After-y",100,10,500));
-    gui.add(MinForCC.set("Min Shape CC-z",100,10,500));
+    gui.add(MinForCC.set("Min Shape CC-y",100,10,500));
+    gui.add(MinForAfter.set("Min Shape After-z",100,10,500));
+    
     
 
     blobview.setup("Display the Blob",true);
@@ -230,7 +231,7 @@ void ofApp::draw(){
         ofSetColor(255, 255, 255);
         stringstream reportStream;
         
-        reportStream<< " Blobs detected in IR camera " << backDiff.contourFinder.blobs.size() <<endl<< " Blob size  " << blobArea << " Blobs consider hit at " << minBlobSize<<" Blob Velocity "<<velocity<<endl<<" App fps: " << ofGetFrameRate() << " layout size " << layout.myShapes.size() << endl;
+        reportStream<< " Blobs detected in IR camera " << backDiff.contourFinder.blobs.size() <<endl<< " Blob size  " << blobArea << " Blobs consider hit at " << blobHit<<" Blob Velocity "<<velocity<<endl<<" App fps: " << ofGetFrameRate() << " layout size " << layout.myShapes.size() << endl;
         
         ofDrawBitmapString(reportStream.str(), 130, ofGetHeight()-40);
         
@@ -277,20 +278,23 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
     
     for (int i = 0; i<layout.myShapes.size();i++){
         
-        if (area <= minBlobSize && layout.myShapes[i].inside(x,y)){
+        if (area <= blobHit && layout.myShapes[i].inside(x,y)){
             
             //expriment with expression!
-            int ccVal = ofMap(y, layout.myShapes[i].getBoundingBox().getMinY(), layout.myShapes[i].getBoundingBox().getMaxY(), 127,0);
-            int pbVal = ofMap(x, layout.myShapes[i].getBoundingBox().getMinX(), layout.myShapes[i].getBoundingBox().getMaxX(), 0, 16383);
-
-            midi.sendControlChange(blobId,1, ccVal);
             
-             if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY())  > MinForAfter){ // threshold for aftertouch
+            int pbVal = ofMap(x, layout.myShapes[i].getBoundingBox().getMinX(), layout.myShapes[i].getBoundingBox().getMaxX(), 0, 16383); //x
+            int modVal = ofMap(y, layout.myShapes[i].getBoundingBox().getMinY(), layout.myShapes[i].getBoundingBox().getMaxY(), 127,0); // y
+            int atVal = ofMap(area, minBlob,blobHit, 127,0); // z
+           
+            
 //            midi.sendPolyAftertouch(blobId, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
-                 midi.sendAftertouch(blobId, ccVal); // just sending AF to differnet channels all the time
+            midi.sendAftertouch(blobId, atVal); // just sending AF to differnet channels all the time on the Z axis
+        
+             if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY())  > MinForCC){ // threshold for cc modulation on the Y axis
+                     midi.sendControlChange(blobId,1, modVal);  // always send modVal on Y axis the opposite of at value.
              }
             
-            if ((layout.myShapes[i].getBoundingBox().getMaxX() - layout.myShapes[i].getBoundingBox().getMinX())  > MinForPitch){ // threshold for pitchband
+            if ((layout.myShapes[i].getBoundingBox().getMaxX() - layout.myShapes[i].getBoundingBox().getMinX())  > MinForPitch){ // threshold for pitchband on the X axis
             midi.sendPitchBend(blobId, pbVal);
             }
 
@@ -428,7 +432,7 @@ void ofApp::layoutColor(int i, int val2,int val3){
          colorMode += 0;
      }
     
-    if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY()) > MinForAfter){ // height
+    if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY()) > MinForCC){ // height
         colorMode += 10;
     }else {
         colorMode += 0;
@@ -544,7 +548,7 @@ void ofApp::SelectLayoutInterface(){
     bool change = false;
     
         //  change interface from my interface list
-        if (uLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//up left
+        if (uLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= blobHit){//up left
             if (canClick[0]){
                 canClick[0] = false;
                 change = true;
@@ -565,7 +569,7 @@ void ofApp::SelectLayoutInterface(){
         }
 
 
-        if (uRight.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//up right
+        if (uRight.inside(blobLocation.x,blobLocation.y) && blobArea <= blobHit){//up right
             if(canClick[1]){
                 canClick[1] = false;
                 change = true;
@@ -581,7 +585,7 @@ void ofApp::SelectLayoutInterface(){
 
     
     //  change musical instrument in Ableton using MIDI Control Change msg
-    if (dLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//down left
+    if (dLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= blobHit){//down left
         if(canClick[2]){
             canClick[2] = false;
             if ( ccVal > 0){
@@ -595,7 +599,7 @@ void ofApp::SelectLayoutInterface(){
         canClick[2]=true;
     }
 
-    if (dRight.inside(blobLocation.x,blobLocation.y) && blobArea <= minBlobSize){//down right
+    if (dRight.inside(blobLocation.x,blobLocation.y) && blobArea <= blobHit){//down right
         if(canClick[3]){
             canClick[3] = false;
             ofBackground(255);
@@ -732,7 +736,7 @@ void ofApp::keyPressed(int key){
             ofPopStyle();
             break;
         case 'q': // set blob size
-            minBlobSize.set(blobArea);
+            blobHit.set(blobArea);
             break;
     
     }
