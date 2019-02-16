@@ -9,11 +9,11 @@
 	<Min_Velocity>70</Min_Velocity>
 	<Max_Velocity>127</Max_Velocity>
 	<Display_the_Blob>1</Display_the_Blob>
-	<Min_Shape_Pitch-x>286</Min_Shape_Pitch-x>
+	<Min_Shape_Pitch-x>149</Min_Shape_Pitch-x>
 	<Min_Shape_After-y>169</Min_Shape_After-y>
 	<Min_Shape_CC-z>100</Min_Shape_CC-z>
 	<MIDI_MPE_Ch_Count>3</MIDI_MPE_Ch_Count>
-	<Min_Shape_CC-y>10</Min_Shape_CC-y>
+	<Min_Shape_CC-y>159</Min_Shape_CC-y>
 	<Min_Shape_After-z>100</Min_Shape_After-z>
 	<Blob_Hit_Size>5542</Blob_Hit_Size>
 </group>

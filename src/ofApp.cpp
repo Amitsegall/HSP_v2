@@ -433,36 +433,6 @@ void ofApp::layoutToNotes(int ch, int note, int velocity){
 //--------------------------------------------------------------
 void ofApp::layoutColor(int i, int val2,int val3){
     
-//    float colorVal;
-//    int colorMode = 0;
-//
-//     if ((layout.myShapes[i].getBoundingBox().getMaxX() - layout.myShapes[i].getBoundingBox().getMinX()) > MinForPitch){ // width
-//         colorMode += 1;
-//     }else {
-//         colorMode += 0;
-//     }
-//
-//    if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY()) > MinForCC){ // height
-//        colorMode += 10;
-//    }else {
-//        colorMode += 0;
-//    }
-//
-////    colorVal = ofMap(i, 0, layout.myShapes.size(), val2, val3);
-//
-//
-//
-//    if (colorMode > 10 ){ // both x+y
-//        colorList[i] = ofColor(0,255,255);
-//    }else if (colorMode == 10){ // just y
-//        colorList[i] = ofColor(255,255,0);
-//    }else if (colorMode < 10){ // just x
-//        colorList[i] = ofColor(255,0,124);
-//    }else {
-//        colorList[i] = ofColor(255);
-//    }
-//
-    
 //    / old color system.
     
     if (layout.currentImage < 15){
@@ -549,8 +519,33 @@ void ofApp::layoutColor(int i, int val2,int val3){
         
     }else{
 
-        coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; //
+//    coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; //
 
+            int colorMode = 0;
+        
+             if ((layout.myShapes[i].getBoundingBox().getMaxX() - layout.myShapes[i].getBoundingBox().getMinX()) > MinForPitch){ // width
+                 colorMode += 1;
+             }else {
+                 colorMode += 0;
+             }
+        
+            if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY()) > MinForCC){ // height
+                colorMode += 10;
+            }else {
+                colorMode += 0;
+            }
+        
+            int colorVal = ofMap(i, 0, layout.myShapes.size(), val2, val3);
+        
+        
+            if (colorMode > 10 ){ // both x+y
+                colorList[i] = ofColor(0,255,colorVal);
+            }else if (colorMode == 10){ // just y
+                colorList[i] = ofColor(255,colorVal,0);
+            }else if (colorMode < 10){ // just x
+                colorList[i] = ofColor(colorVal,0,124);
+            }
+        
     }
 
 }
