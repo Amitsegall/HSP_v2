@@ -572,7 +572,7 @@ void ofApp::SelectLayoutInterface(){
             }
             ccVal = layout.currentImage;
             midi.sendControlChange(1, 119, ccVal);
-            midi.sendProgramChange(1, ccVal);
+
         }else{
             canClick[0]=true;
         }
@@ -587,7 +587,7 @@ void ofApp::SelectLayoutInterface(){
             }
             ccVal = layout.currentImage;
             midi.sendControlChange(1, 119, ccVal);
-            midi.sendProgramChange(1, ccVal);
+
         }else{
             canClick[1]=true;
         }
