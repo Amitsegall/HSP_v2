@@ -56,6 +56,10 @@ void ofApp::setup(){
     blobview.setup("Display the Blob",true);
     gui.add(&blobview);
     gui.setPosition(130, 0);
+    showAllLayouts.setup("Show All Layouts",false);
+    gui.add(&showAllLayouts);
+    gui.setPosition(130, 0);
+    layoutLimit = 5;
 
     //layout editor
     maker.setup();
@@ -132,8 +136,8 @@ void ofApp::draw(){
 //    make the colors move later
     float sinTime = sin(ofDegToRad(ofGetFrameNum()));
     float cosTime = cos(ofDegToRad(ofGetFrameNum()));
-    float s = ofMap(sinTime,-1,1,0,255);
-    float c = ofMap(cosTime,-1,1,0,255);
+    float s = ofMap(sinTime,-1,1,128,255);
+    float c = ofMap(cosTime,-1,1,128,255);
     
     ofPushStyle();
     ofSetColor(255);
@@ -159,6 +163,7 @@ void ofApp::draw(){
                 blobArea = backDiff.myArea[j];
                 activeBlobId = backDiff.myIds[j];
                 activeMidiCh = (activeBlobId%MidiMpeCh)+2; //ch1 saved for general massages like sustain and others.
+                
                 checkShapesInLayout(activeMidiCh,blobLocation.x,blobLocation.y,blobArea,s,c,j); /// this is is where it begins
                 
                 if (blobArea != oldArea){ // check size differenc and make a velocity
@@ -291,13 +296,9 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
             int pbVal = ofMap(x, layout.myShapes[i].getBoundingBox().getMinX(), layout.myShapes[i].getBoundingBox().getMaxX(), 0, 16383); //x
             int modVal = ofMap(y, layout.myShapes[i].getBoundingBox().getMinY(), layout.myShapes[i].getBoundingBox().getMaxY(), 127,0); // y
             int atVal = ofMap(area, minBlob,blobHit, 127,0); // z
-           
-//                    if (layout.myShapes[i].getArea() > MinForAfter){
-//            midi.sendPolyAftertouch(blobId, jsLayouts["layouts"][layout.currentImage]["notes"][i].asInt(), ccVal);
-            midi.sendAftertouch(blobId, atVal); // just sending AF to differnet channels all the time on the Z axis
-//                    }
             
-                        
+            midi.sendAftertouch(blobId, atVal); // just sending AF to differnet channels all the time on the Z axis
+            
              if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY())  > MinForCC){ // threshold for cc modulation on the Y axis (SWIPE)
                      midi.sendControlChange(blobId,1, modVal);  // always send modVal on Y axis the opposite of at value.
              }
@@ -343,7 +344,8 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
 //                    cout<<"removing item form list "<<endl;
                     int noteOff = bigList[x].y;
                     int locId = bigList[x].x;
-                    midi.sendPitchBend(bigList[i].x, 8192); // make sure that no pitchband is stuck
+                    midi.sendPitchBend(locId, 8192); // make sure that no pitchband is stuck
+                    midi.sendControlChange(locId, 1, 0); // clean the modwheel
                     midi.sendNoteOn(locId, jsLayouts["layouts"][layout.currentImage]["notes"][noteOff].asInt(),0);
                     bigList.erase(bigList.begin()+x);
                     listOfNotes.erase(listOfNotes.begin()+x);
@@ -435,89 +437,89 @@ void ofApp::layoutColor(int i, int val2,int val3){
     
 //    / old color system.
     
-    if (layout.currentImage < 15){
-    
-    switch (layout.currentImage){
-
-        case 0 : coolCol = ofColor::fromHsb(ofMap(kalCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // kalimba
-        case 1 : coolCol = ofColor::fromHsb(ofMap(panCol[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // pandrum
-        case 2 :
-            //            coolCol = ofColor::fromHsb(ofMap(pianoCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255); break; // piano
-            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), pianoCol[i]%12) != std::end(whiteNotes)){
-                coolCol = ofColor(255,0,val2);
-            }else if (pianoCol[i]%12 == 1){
-                coolCol = ofColor(0,255,0);
-            } else {
-                coolCol = ofColor(val3,0,255);
-            }
-            colorList[i] = coolCol;
-            break;
-
-        case 3 : coolCol = ofColor::fromHsb(ofMap(mpcCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // mpc
-        case 4 : coolCol = ofColor::fromHsb(ofMap(tempCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // tempest
-        case 5 :
-            //            coolCol = ofColor::fromHsb(ofMap(isoGerhard[i]%12,0,11,val2,val3),255,255); break; // isoGerhard
-            if (std::find(std::begin(whiteNotes), std::end(whiteNotes),jsLayouts["layouts"][5]["notes"][i].asInt()%12) != std::end(whiteNotes)){
-                coolCol = ofColor(255,0,val3);
-            }else if (jsLayouts["layouts"][5]["notes"][i].asInt()%12 == 1){
-                coolCol = ofColor(0,255,0);
-            } else {
-                coolCol = ofColor(val2,0,255);
-            }
-            colorList[i] = coolCol;
-            break;
-
-        case 6 :
-            //            coolCol = ofColor::fromHsb(ofMap(janko[i]%12,0,11,val2,val3),255,255); break; // Janko
-            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), jsLayouts["layouts"][6]["notes"][i].asInt()%12) != std::end(whiteNotes)){
-                coolCol = ofColor(255,0,val2);
-            }else if (jsLayouts["layouts"][6]["notes"][i].asInt()%12 == 1){
-                coolCol = ofColor(0,255,0);
-            } else {
-                coolCol = ofColor(val3,0,255);
-            }
-            colorList[i] = coolCol;
-            break;
-
-        case 7 :
-            //             coolCol = ofColor::fromHsb(ofMap(pushCromCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255); break; // push
-            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), (pushCromCol[i]+1)%12) != std::end(whiteNotes)){
-                coolCol = ofColor(255,0,val2);
-            }else if ((pushCromCol[i]+1)%12 == 1){
-                coolCol = ofColor(0,255,0);
-            } else {
-                coolCol = ofColor(val3,0,255);
-            }
-            colorList[i] = coolCol;
-            break;
-
-        case 8 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Ableton
-
-        case 9 : coolCol = ofColor::fromHsb(ofMap(cirOfFifCol[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // CircleOfFifths
-
-        case 10 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Avicii
-
-        case 11 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Skrillex
-
-        case 12 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Charts
-
-        case 13 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // CircleV2
-
-        case 14 :
-            //            coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Triangle
-            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), (jsLayouts["layouts"][14]["notes"][i].asInt()+1)%12) != std::end(whiteNotes)){
-                coolCol = ofColor(255,0,val3);
-            }else if ((jsLayouts["layouts"][14]["notes"][i].asInt()+1)%12 == 1){
-                coolCol = ofColor(0,255,0);
-            } else {
-                coolCol = ofColor(val2,0,255);
-            }
-            colorList[i] = coolCol;
-            break;
-            
-        }
-        
-    }else{
+//    if (layout.currentImage < 15){
+//
+//    switch (layout.currentImage){
+//
+//        case 0 : coolCol = ofColor::fromHsb(ofMap(kalCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // kalimba
+//        case 1 : coolCol = ofColor::fromHsb(ofMap(panCol[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // pandrum
+//        case 2 :
+//            //            coolCol = ofColor::fromHsb(ofMap(pianoCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255); break; // piano
+//            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), pianoCol[i]%12) != std::end(whiteNotes)){
+//                coolCol = ofColor(255,0,val2);
+//            }else if (pianoCol[i]%12 == 1){
+//                coolCol = ofColor(0,255,0);
+//            } else {
+//                coolCol = ofColor(val3,0,255);
+//            }
+//            colorList[i] = coolCol;
+//            break;
+//
+//        case 3 : coolCol = ofColor::fromHsb(ofMap(mpcCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // mpc
+//        case 4 : coolCol = ofColor::fromHsb(ofMap(tempCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // tempest
+//        case 5 :
+//            //            coolCol = ofColor::fromHsb(ofMap(isoGerhard[i]%12,0,11,val2,val3),255,255); break; // isoGerhard
+//            if (std::find(std::begin(whiteNotes), std::end(whiteNotes),jsLayouts["layouts"][5]["notes"][i].asInt()%12) != std::end(whiteNotes)){
+//                coolCol = ofColor(255,0,val3);
+//            }else if (jsLayouts["layouts"][5]["notes"][i].asInt()%12 == 1){
+//                coolCol = ofColor(0,255,0);
+//            } else {
+//                coolCol = ofColor(val2,0,255);
+//            }
+//            colorList[i] = coolCol;
+//            break;
+//
+//        case 6 :
+//            //            coolCol = ofColor::fromHsb(ofMap(janko[i]%12,0,11,val2,val3),255,255); break; // Janko
+//            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), jsLayouts["layouts"][6]["notes"][i].asInt()%12) != std::end(whiteNotes)){
+//                coolCol = ofColor(255,0,val2);
+//            }else if (jsLayouts["layouts"][6]["notes"][i].asInt()%12 == 1){
+//                coolCol = ofColor(0,255,0);
+//            } else {
+//                coolCol = ofColor(val3,0,255);
+//            }
+//            colorList[i] = coolCol;
+//            break;
+//
+//        case 7 :
+//            //             coolCol = ofColor::fromHsb(ofMap(pushCromCol[i]-1,0,layout.myShapes.size(),val2,val3),255,255); break; // push
+//            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), (pushCromCol[i]+1)%12) != std::end(whiteNotes)){
+//                coolCol = ofColor(255,0,val2);
+//            }else if ((pushCromCol[i]+1)%12 == 1){
+//                coolCol = ofColor(0,255,0);
+//            } else {
+//                coolCol = ofColor(val3,0,255);
+//            }
+//            colorList[i] = coolCol;
+//            break;
+//
+//        case 8 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Ableton
+//
+//        case 9 : coolCol = ofColor::fromHsb(ofMap(cirOfFifCol[i],0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // CircleOfFifths
+//
+//        case 10 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Avicii
+//
+//        case 11 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Skrillex
+//
+//        case 12 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Charts
+//
+//        case 13 : coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // CircleV2
+//
+//        case 14 :
+//            //            coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; break; // Triangle
+//            if (std::find(std::begin(whiteNotes), std::end(whiteNotes), (jsLayouts["layouts"][14]["notes"][i].asInt()+1)%12) != std::end(whiteNotes)){
+//                coolCol = ofColor(255,0,val3);
+//            }else if ((jsLayouts["layouts"][14]["notes"][i].asInt()+1)%12 == 1){
+//                coolCol = ofColor(0,255,0);
+//            } else {
+//                coolCol = ofColor(val2,0,255);
+//            }
+//            colorList[i] = coolCol;
+//            break;
+//
+//        }
+//
+//    }else{
 
 //    coolCol = ofColor::fromHsb(ofMap(i,0,layout.myShapes.size(),val2,val3),255,255);colorList[i] = coolCol; //
 
@@ -535,18 +537,18 @@ void ofApp::layoutColor(int i, int val2,int val3){
                 colorMode += 0;
             }
         
-            int colorVal = ofMap(i, 0, layout.myShapes.size(), val2, val3);
+            int colorVal = ofMap(i, 0, layout.myShapes.size(), 128, val3);
         
         
             if (colorMode > 10 ){ // both x+y
-                colorList[i] = ofColor(0,255,colorVal);
+                colorList[i] = ofColor(0,255,0);
             }else if (colorMode == 10){ // just y
-                colorList[i] = ofColor(255,colorVal,0);
+                colorList[i] = ofColor(colorVal,0,val2);
             }else if (colorMode < 10){ // just x
-                colorList[i] = ofColor(colorVal,0,124);
+                colorList[i] = ofColor(0,val2,colorVal);
             }
         
-    }
+//    }
 
 }
 
@@ -561,15 +563,28 @@ void ofApp::SelectLayoutInterface(){
             if (canClick[0]){
                 canClick[0] = false;
                 change = true;
-                if (layout.currentImage > 0){
-                    layout.currentImage --;
-                    layout.currentImage %= layout.dir.size();
+                
+                if (showAllLayouts){
+                    if (layout.currentImage > 0){
+                        layout.currentImage --;
+                        layout.currentImage %= layout.dir.size();
 
+                    }else{
+                        layout.currentImage = layout.dir.size()-1;
+                        layout.currentImage %= layout.dir.size();
+                    }
                 }else {
-                    layout.currentImage = layout.dir.size()-1;
-                    layout.currentImage %= layout.dir.size();
+                    if (layout.currentImage > 0){
+                        layout.currentImage --;
+                        layout.currentImage %= layout.dir.size();
+                    
+                    }else {
+                        layout.currentImage = layoutLimit;
+                        layout.currentImage %= layout.dir.size();
+                    }
                 }
             }
+                
             ccVal = layout.currentImage;
             midi.sendControlChange(1, 119, ccVal);
 
@@ -582,8 +597,16 @@ void ofApp::SelectLayoutInterface(){
             if(canClick[1]){
                 canClick[1] = false;
                 change = true;
+                if (showAllLayouts){
                 layout.currentImage ++;
                 layout.currentImage %= layout.dir.size();
+                }else if (layout.currentImage >= layoutLimit){
+                        layout.currentImage = 0;
+                } else {
+                    layout.currentImage++;
+                    layout.currentImage %= layout.dir.size();
+                
+                }
             }
             ccVal = layout.currentImage;
             midi.sendControlChange(1, 119, ccVal);
@@ -592,36 +615,37 @@ void ofApp::SelectLayoutInterface(){
             canClick[1]=true;
         }
 
+/*** in HSP v2 you can't change sound to a layout, they all apart of the layout itself***/
     
     //  change musical instrument in Ableton using MIDI Control Change msg
-    if (dLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= blobHit){//down left
-        if(canClick[2]){
-            canClick[2] = false;
-            if ( ccVal > 0){
-                ccVal --;
-            }else{
-                ccVal= instNum;
-            }
-            midi.sendControlChange(1, 119, ccVal);
-        }
-    }else{
-        canClick[2]=true;
-    }
-
-    if (dRight.inside(blobLocation.x,blobLocation.y) && blobArea <= blobHit){//down right
-        if(canClick[3]){
-            canClick[3] = false;
-            ofBackground(255);
-            if ( ccVal < instNum){
-                ccVal ++;
-            }else{
-                ccVal= 0;
-            }
-            midi.sendControlChange(1, 119, ccVal);
-        }
-    }else{
-        canClick[3]=true;
-    }
+//    if (dLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= blobHit){//down left
+//        if(canClick[2]){
+//            canClick[2] = false;
+//            if ( ccVal > 0){
+//                ccVal --;
+//            }else{
+//                ccVal= instNum;
+//            }
+//            midi.sendControlChange(1, 119, ccVal);
+//        }
+//    }else{
+//        canClick[2]=true;
+//    }
+//
+//    if (dRight.inside(blobLocation.x,blobLocation.y) && blobArea <= blobHit){//down right
+//        if(canClick[3]){
+//            canClick[3] = false;
+//            ofBackground(255);
+//            if ( ccVal < instNum){
+//                ccVal ++;
+//            }else{
+//                ccVal= 0;
+//            }
+//            midi.sendControlChange(1, 119, ccVal);
+//        }
+//    }else{
+//        canClick[3]=true;
+//    }
 
     if (change){ //if layout changed draw new one
     layout.cleanShapes();
@@ -719,10 +743,19 @@ void ofApp::keyPressed(int key){
             
             
         case ' ': // change layouts one after another
-            if (layout.dir.size() > 0){
-                layout.currentImage++;
-                layout.currentImage %= layout.dir.size();
+            
+            if (showAllLayouts){
+                if (layout.dir.size() > 0){
+                    layout.currentImage++;
+                    layout.currentImage %= layout.dir.size();
+                }
+            }else if (layout.dir.size() > 0 && layout.currentImage < layoutLimit){
+                    layout.currentImage++;
+                    layout.currentImage %= layout.dir.size();
+            }else {
+                layout.currentImage = 0;
             }
+            
             ccVal = layout.currentImage;
             midi.sendControlChange(1, 119, ccVal);
             layout.cleanShapes();

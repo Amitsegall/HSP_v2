@@ -59,6 +59,7 @@ class ofApp : public ofBaseApp{
     void drawTheShape(int ShapeNum);
     void drawTheInterface();
     void checkShapesInLayout(int blobNumber, int x, int y, int area,int s, int c,int placeInLine);
+    int layoutLimit;
     
     //layout maker editor
     ofxPanel maker;
@@ -124,6 +125,7 @@ class ofApp : public ofBaseApp{
     ofParameter<int> MinForPitch;
     ofParameter<int> MinForCC;
     
+    ofxToggle showAllLayouts;
     ofxToggle blobview;
     
     bool menu; // show gui

@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <group>
 	<Layout_Threshold>80</Layout_Threshold>
-	<Back_Diff_Threshold>88</Back_Diff_Threshold>
+	<Back_Diff_Threshold>102</Back_Diff_Threshold>
 	<Blur_value>0</Blur_value>
 	<Blob_Size_Hit>1800</Blob_Size_Hit>
-	<Min_Blob_min>4042</Min_Blob_min>
-	<Max_Blob_size>10042</Max_Blob_size>
+	<Min_Blob_min>3618</Min_Blob_min>
+	<Max_Blob_size>9618</Max_Blob_size>
 	<Min_Velocity>70</Min_Velocity>
 	<Max_Velocity>127</Max_Velocity>
 	<Display_the_Blob>1</Display_the_Blob>
-	<Min_Shape_Pitch-x>149</Min_Shape_Pitch-x>
+	<Min_Shape_Pitch-x>164</Min_Shape_Pitch-x>
 	<Min_Shape_After-y>169</Min_Shape_After-y>
 	<Min_Shape_CC-z>100</Min_Shape_CC-z>
-	<MIDI_MPE_Ch_Count>3</MIDI_MPE_Ch_Count>
-	<Min_Shape_CC-y>159</Min_Shape_CC-y>
+	<MIDI_MPE_Ch_Count>6</MIDI_MPE_Ch_Count>
+	<Min_Shape_CC-y>160</Min_Shape_CC-y>
 	<Min_Shape_After-z>100</Min_Shape_After-z>
-	<Blob_Hit_Size>5800</Blob_Hit_Size>
+	<Blob_Hit_Size>5650</Blob_Hit_Size>
 </group>
