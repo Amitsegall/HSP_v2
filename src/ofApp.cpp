@@ -21,6 +21,11 @@ void ofApp::setup(){
     mainOut.begin();
     ofClear(255, 255, 255);
     mainOut.end();
+    
+    shaderOut.allocate(1280 , 800); // otherwise the CV will fail - kill the alpah !
+    shaderOut.begin();
+    ofClear(0);
+    shaderOut.end();
 
     //init backdiff
     backDiff.setup();
@@ -115,6 +120,10 @@ void ofApp::setup(){
     bigList.clear();
     listOfNotes.clear();
     cleanNotes = false;
+    
+    shader1.load("shaders/shader1");
+    shader2.load("shaders/shader2");
+    shader3.load("shaders/shader3");
 }
 
 
@@ -132,12 +141,11 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-//    bool cleanNotes = false;
-//    make the colors move later
+
     float sinTime = sin(ofDegToRad(ofGetFrameNum()));
     float cosTime = cos(ofDegToRad(ofGetFrameNum()));
-    float s = ofMap(sinTime,-1,1,128,255);
-    float c = ofMap(cosTime,-1,1,0,128);
+    float s = ofMap(sinTime,-1,1,0,255);
+    float c = ofMap(cosTime,-1,1,0,255);
     
     ofPushStyle();
     ofSetColor(255);
@@ -149,6 +157,9 @@ void ofApp::draw(){
         
         if (layout.currentImage != colorCheck){ //create an array of colors only once;
             colorList.resize(layout.myShapes.size());
+            for (int x=0 ; x <colorList.size();x++){
+                colorList[x]=true;
+            }
             colorCheck = layout.currentImage;
         }
         
@@ -187,7 +198,7 @@ void ofApp::draw(){
                 if (bigList[i].z == 1){
                     
                     layoutToNotes(bigList[i].x,bigList[i].y, 100); // currently fixed velocity
-                    colorList[bigList[i].y] = ofColor(255);
+                    colorList[bigList[i].y] = false; //change color to white
                     bigList[i].z = 0; // bool so you can't play more than once.
                   
                 } // if not in played
@@ -268,8 +279,7 @@ void ofApp::draw(){
     
     oldArea = blobArea; //for velocity calculation
     
-    
-    
+
 }
 
 //--------------------------------------------------------------
@@ -346,13 +356,14 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
                     midi.sendNoteOn(locId, jsLayouts["layouts"][layout.currentImage]["notes"][noteOff].asInt(),0);
                     bigList.erase(bigList.begin()+x);
                     listOfNotes.erase(listOfNotes.begin()+x);
+                    
                     }
                     
                 }
             }
             if (std::find(std::begin(listOfNotes),std::end(listOfNotes), i) != std::end(listOfNotes)) {// if item is inside don't do anything)
             }else{
-            layoutColor(i,s ,c); // change color to all other shapes
+                colorList[i]=true; // change color to all other shapes
             }
         }// faild condition
         
@@ -366,24 +377,33 @@ void ofApp::playWithMouse(){
     for (int i = 0; i<layout.myShapes.size();i++){
         
         if (layout.myShapes[i].inside(musX, musY) && musClicked){
-            colorList[i] = ofColor(255); //change the shape color to white
+            colorList[i] = false; //change the shape color to white
             layoutToNotes(1,i, 100); //play the note
             musClicked = false;
             
+        }else{
+//            colorList[i] = true; - clear too much
         }
+            
     }
 }
 
 
 //--------------------------------------------------------------
 void ofApp::drawTheInterface(){  // this is what draws the shape and check if they are inside
-    
+    shaderOut.begin();
+    ofClear(0);
     for (int i = 0; i<layout.myShapes.size();i++){
         
-        ofPushStyle();
+
         drawTheShape(i);
-        ofPopStyle();
+
     }
+    
+    shaderOut.end();
+    
+    
+    shaderOut.draw(0,0);
 }
 
 
@@ -393,13 +413,81 @@ void ofApp::drawTheShape(int shapeNum){
     
     // draw the shapes of the layouts!
     
-    ofSetColor(colorList[shapeNum]);
-    ofBeginShape();
-    auto vertices = layout.myShapes[shapeNum].getVertices();
-    for(int j = 0; j < vertices.size(); j++) {
-        ofVertex(vertices[j]);
+    
+    if (colorList[shapeNum] == true){
+    
+        int colorMode = 0;
+    
+        if ((layout.myShapes[shapeNum].getBoundingBox().getMaxX() - layout.myShapes[shapeNum].getBoundingBox().getMinX()) > MinForPitch){ // width
+            colorMode += 1;
+        }else {
+            colorMode += 0;
+        }
+        
+        if ((layout.myShapes[shapeNum].getBoundingBox().getMaxY() - layout.myShapes[shapeNum].getBoundingBox().getMinY()) > MinForCC){ // height
+            colorMode += 10;
+        }else {
+            colorMode += 0;
+        }
+
+    
+        if (colorMode > 10 ){ // both x+y
+
+            shader1.begin();
+            
+            shader1.setUniform1f("u_time",ofGetElapsedTimef());
+            shader1.setUniform2f("u_resolution",1280.0,800.0);
+            
+            ofBeginShape();
+            auto vertices = layout.myShapes[shapeNum].getVertices();
+            for(int j = 0; j < vertices.size(); j++) {
+                ofVertex(vertices[j]);
+            }
+            ofEndShape();
+            shader1.end();
+
+        }else if (colorMode == 10){ // just y
+
+            shader2.begin();
+    
+            shader2.setUniform1f("u_time",ofGetElapsedTimef());
+            shader2.setUniform2f("u_resolution",1280.0,800.0);
+            
+            ofBeginShape();
+            auto vertices = layout.myShapes[shapeNum].getVertices();
+            for(int j = 0; j < vertices.size(); j++) {
+                ofVertex(vertices[j]);
+            }
+            ofEndShape();
+            shader2.end();
+
+        }else if (colorMode < 10){ // just x
+
+            shader3.begin();
+            
+            shader3.setUniform1f("u_time",ofGetElapsedTimef());
+            shader3.setUniform2f("u_resolution",1280.0,800.0);
+            
+            ofBeginShape();
+            auto vertices = layout.myShapes[shapeNum].getVertices();
+            for(int j = 0; j < vertices.size(); j++) {
+                ofVertex(vertices[j]);
+            }
+            ofEndShape();
+            shader3.end();
+        }
+
+    }else{
+
+        ofSetColor(255);
+        ofBeginShape();
+        auto vertices = layout.myShapes[shapeNum].getVertices();
+        for(int j = 0; j < vertices.size(); j++) {
+            ofVertex(vertices[j]);
+        }
+        ofEndShape();
+
     }
-    ofEndShape();
     
     // write the number of shapes
     if (menu){
@@ -433,33 +521,33 @@ void ofApp::layoutToNotes(int ch, int note, int velocity){
 void ofApp::layoutColor(int i, int val2,int val3){
     
 
-            int colorMode = 0;
-        
-             if ((layout.myShapes[i].getBoundingBox().getMaxX() - layout.myShapes[i].getBoundingBox().getMinX()) > MinForPitch){ // width
-                 colorMode += 1;
-             }else {
-                 colorMode += 0;
-             }
-        
-            if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY()) > MinForCC){ // height
-                colorMode += 10;
-            }else {
-                colorMode += 0;
-            }
-        
-            int colorVal1 = ofMap(i, 0, layout.myShapes.size(), 128, val2);
-            int colorVal2 = ofMap(i, 0, layout.myShapes.size(), 0, val3);
-
-    
-        
-            if (colorMode > 10 ){ // both x+y
-                colorList[i] = ofColor(10,40,colorVal1); // dark blue
-            }else if (colorMode == 10){ // just y
-                colorList[i] = ofColor(250,colorVal2,250); // pink
-            }else if (colorMode < 10){ // just x
-                colorList[i] = ofColor(40,colorVal1,250); // light blue
-            }
-        
+//            int colorMode = 0;
+//
+//             if ((layout.myShapes[i].getBoundingBox().getMaxX() - layout.myShapes[i].getBoundingBox().getMinX()) > MinForPitch){ // width
+//                 colorMode += 1;
+//             }else {
+//                 colorMode += 0;
+//             }
+//
+//            if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY()) > MinForCC){ // height
+//                colorMode += 10;
+//            }else {
+//                colorMode += 0;
+//            }
+//
+//            int colorVal1 = ofMap(i, 0, layout.myShapes.size(), 128, val2);
+//            int colorVal2 = ofMap(i, 0, layout.myShapes.size(), 0, val3);
+//
+//
+//
+//            if (colorMode > 10 ){ // both x+y
+//                colorList[i] = ofColor(10,40,colorVal1); // dark blue
+//            }else if (colorMode == 10){ // just y
+//                colorList[i] = ofColor(250,colorVal2,250); // pink
+//            }else if (colorMode < 10){ // just x
+//                colorList[i] = ofColor(40,colorVal1,250); // light blue
+//            }
+//
 //    }
 
 }
@@ -673,6 +761,7 @@ void ofApp::keyPressed(int key){
             layout.cleanShapes();
             layout.findShapesInImage(layout.images[layout.currentImage]);
             layout.makeShapesFromBlobs();
+            
             break;
        
             // computer vision settings and tools:
@@ -729,6 +818,7 @@ void ofApp::mouseReleased(int x, int y, int button){
             midi.sendNoteOn(1, i,0);
         }
     }
+    
     
     
 }
