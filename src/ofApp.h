@@ -84,7 +84,7 @@ class ofApp : public ofBaseApp{
     // colors
     vector<bool> colorList;
     int colorCheck;
-//    ofColor coolCol;
+//    ofColor coolCol
     
     void layoutToNotes(int ch, int note, int velocity);
     void layoutColor(int val1, int val2,int val3);
@@ -136,7 +136,7 @@ class ofApp : public ofBaseApp{
     bool musClicked;
     int musX,musY;
     
-    
+    //nice colors 
     ofShader shader1,shader2,shader3;
     ofFbo shaderOut;
     

@@ -22,9 +22,9 @@ float plot(vec2 st, float pct){
 void main() {
     vec2 st = gl_FragCoord.xy/u_resolution;
     
-    float y = cubicPulse((sin(u_time)+1.0)/2.,0.2,st.x); // move line , width, direction y/x
+    float y = cubicPulse((sin(u_time)+1.0)/2.,0.2,st.y); // move line , width, direction y/x
     
-    vec3 color = vec3(y,st.y,st.x); //change color relations
+    vec3 color = vec3(y,1.,st.x); //change color relations
     
     // float pct = plot(st,y);
     // color = (1.0-pct)*color+pct*vec3(0.0,1.0,0.0);

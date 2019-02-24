@@ -121,6 +121,7 @@ void ofApp::setup(){
     listOfNotes.clear();
     cleanNotes = false;
     
+    //shaders for colors
     shader1.load("shaders/shader1");
     shader2.load("shaders/shader2");
     shader3.load("shaders/shader3");
@@ -182,10 +183,7 @@ void ofApp::draw(){
             
             cleanNotes = true;
        
-        }else{
-            for (int i = 0; i<layout.myShapes.size();i++){
-                layoutColor(i,s,c);
-            }
+        
         }// if blob detected
         
       
@@ -217,7 +215,7 @@ void ofApp::draw(){
 
         } // if the list big
 
-        playWithMouse(); /// mostly for testing
+        
         drawTheInterface();
         
         
@@ -294,11 +292,9 @@ void ofApp::checkShapesInLayout(int blobId, int x, int y, int area, int s, int c
             
             //expriment with expression!
             
-//            Hit - only Z expression/AfterTocuh - light blue (0,255,255);
-//            Strike - No expression at all, only note with no modulation - green (0,255,0);
-//            Play - X,Y,Z modulation all working - yellow (255,255,0);
-//            Swipe - only Y modulation / Mod Wheel - orange (255,81,0);
-//            Slide - only X modulation / PitchBand - pink (255,0,124);
+//            Hit -  only Y modulation / Mod Wheel
+//            Strike - only X modulation / PitchBand
+//            Play - X,Y,Z modulation all working
             
             int pbVal = ofMap(x, layout.myShapes[i].getBoundingBox().getMinX(), layout.myShapes[i].getBoundingBox().getMaxX(), 0, 16383); //x
             int modVal = ofMap(y, layout.myShapes[i].getBoundingBox().getMinY(), layout.myShapes[i].getBoundingBox().getMaxY(), 127,0); // y
@@ -382,7 +378,7 @@ void ofApp::playWithMouse(){
             musClicked = false;
             
         }else{
-//            colorList[i] = true; - clear too much
+            colorList[i] = true; // clear too much
         }
             
     }
@@ -517,40 +513,6 @@ void ofApp::layoutToNotes(int ch, int note, int velocity){
     
 }
 
-//--------------------------------------------------------------
-void ofApp::layoutColor(int i, int val2,int val3){
-    
-
-//            int colorMode = 0;
-//
-//             if ((layout.myShapes[i].getBoundingBox().getMaxX() - layout.myShapes[i].getBoundingBox().getMinX()) > MinForPitch){ // width
-//                 colorMode += 1;
-//             }else {
-//                 colorMode += 0;
-//             }
-//
-//            if ((layout.myShapes[i].getBoundingBox().getMaxY() - layout.myShapes[i].getBoundingBox().getMinY()) > MinForCC){ // height
-//                colorMode += 10;
-//            }else {
-//                colorMode += 0;
-//            }
-//
-//            int colorVal1 = ofMap(i, 0, layout.myShapes.size(), 128, val2);
-//            int colorVal2 = ofMap(i, 0, layout.myShapes.size(), 0, val3);
-//
-//
-//
-//            if (colorMode > 10 ){ // both x+y
-//                colorList[i] = ofColor(10,40,colorVal1); // dark blue
-//            }else if (colorMode == 10){ // just y
-//                colorList[i] = ofColor(250,colorVal2,250); // pink
-//            }else if (colorMode < 10){ // just x
-//                colorList[i] = ofColor(40,colorVal1,250); // light blue
-//            }
-//
-//    }
-
-}
 
 //--------------------------------------------------------------
 
@@ -803,6 +765,7 @@ void ofApp::mousePressed(int x, int y, int button){
     
     homo.mousePressed(x, y, button);
     musClicked = true;
+    playWithMouse(); /// mostly for testing
     
     
 }
