@@ -125,6 +125,7 @@ void ofApp::setup(){
     shader1.load("shaders/shader1");
     shader2.load("shaders/shader2");
     shader3.load("shaders/shader3");
+    shader4.load("shaders/shader4");
 }
 
 
@@ -471,6 +472,21 @@ void ofApp::drawTheShape(int shapeNum){
             }
             ofEndShape();
             shader3.end();
+            
+        }else if (colorMode == 0){ // if no expression
+            cout<<"no Match"<<endl;
+            shader4.begin();
+            
+            shader4.setUniform1f("u_time",ofGetElapsedTimef());
+            shader4.setUniform2f("u_resolution",1280.0,800.0);
+            
+            ofBeginShape();
+            auto vertices = layout.myShapes[shapeNum].getVertices();
+            for(int j = 0; j < vertices.size(); j++) {
+                ofVertex(vertices[j]);
+            }
+            ofEndShape();
+            shader4.end();
         }
 
     }else{
@@ -765,8 +781,9 @@ void ofApp::mousePressed(int x, int y, int button){
     
     homo.mousePressed(x, y, button);
     musClicked = true;
+    if (homoUp1 && homoUp2){
     playWithMouse(); /// mostly for testing
-    
+    }
     
 }
 

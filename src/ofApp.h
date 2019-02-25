@@ -137,7 +137,7 @@ class ofApp : public ofBaseApp{
     int musX,musY;
     
     //nice colors 
-    ofShader shader1,shader2,shader3;
+    ofShader shader1,shader2,shader3,shader4;
     ofFbo shaderOut;
     
 };
