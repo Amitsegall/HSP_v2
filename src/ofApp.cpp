@@ -413,22 +413,19 @@ void ofApp::drawTheShape(int shapeNum){
     
     if (colorList[shapeNum] == true){
     
-        int colorMode = 0;
+        bool yBig = false;
+        bool xBig = false;
     
         if ((layout.myShapes[shapeNum].getBoundingBox().getMaxX() - layout.myShapes[shapeNum].getBoundingBox().getMinX()) > MinForPitch){ // width
-            colorMode += 1;
-        }else {
-            colorMode += 0;
+            xBig = true;
         }
         
         if ((layout.myShapes[shapeNum].getBoundingBox().getMaxY() - layout.myShapes[shapeNum].getBoundingBox().getMinY()) > MinForCC){ // height
-            colorMode += 10;
-        }else {
-            colorMode += 0;
+            yBig = true;
         }
 
     
-        if (colorMode > 10 ){ // both x+y
+        if (yBig == true && xBig == true){ // both x+y
 
             shader1.begin();
             
@@ -443,7 +440,7 @@ void ofApp::drawTheShape(int shapeNum){
             ofEndShape();
             shader1.end();
 
-        }else if (colorMode == 10){ // just y
+        }else if (yBig == true && xBig == false){ // just y
 
             shader2.begin();
     
@@ -458,7 +455,7 @@ void ofApp::drawTheShape(int shapeNum){
             ofEndShape();
             shader2.end();
 
-        }else if (colorMode < 10){ // just x
+        }else if (yBig == false && xBig == true){ // just x
 
             shader3.begin();
             
@@ -473,8 +470,8 @@ void ofApp::drawTheShape(int shapeNum){
             ofEndShape();
             shader3.end();
             
-        }else if (colorMode == 0){ // if no expression
-            cout<<"no Match"<<endl;
+        }else if (xBig == false && yBig == false){ // if no expression
+            
             shader4.begin();
             
             shader4.setUniform1f("u_time",ofGetElapsedTimef());
