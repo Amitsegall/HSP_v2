@@ -27,8 +27,8 @@ void BackDiff::setup(){
     contourFinder2.setMaxAreaRadius(65);
     contourFinder2.setThreshold(165);
     
-    // wait for half a frame before forgetting something
-    contourFinder2.getTracker().setPersistence(40);
+    // set the time to forget ID -- worth experimenting with this for better MPE performance
+    contourFinder2.getTracker().setPersistence(300);
     // an object can move up to 50 pixels per frame
     contourFinder2.getTracker().setMaximumDistance(400);
     
@@ -88,7 +88,7 @@ void BackDiff::draw(){
     
     contourFinder.draw();
     
-    // drawing the ID
+//     drawing the ID
 //    for (int i = 0; i < contourFinder2.size();i++){
 //        ofPushStyle();
 //        ofSetColor(255,0,0);

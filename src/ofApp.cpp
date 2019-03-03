@@ -746,9 +746,9 @@ void ofApp::keyPressed(int key){
             break;
       
         case 'c': // set blob size
-            blobHit.set(blobArea+500);
+            blobHit.set(blobArea+1000);
             maxBlob.set(blobArea+5000);
-            minBlob.set(blobArea-1000);
+            minBlob.set(blobArea-2000);
             break;
     
     }
