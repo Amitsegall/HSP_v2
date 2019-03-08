@@ -532,7 +532,9 @@ void ofApp::layoutToNotes(int ch, int note, int velocity){
 void ofApp::SelectLayoutInterface(){
     
     bool change = false;
-    
+    if (backDiff.contourFinder2.size()>1){
+        
+    }else {
         //  change interface from my interface list
         if (uLeft.inside(blobLocation.x,blobLocation.y) && blobArea <= blobHit){//up left
             if (canClick[0]){
@@ -589,6 +591,8 @@ void ofApp::SelectLayoutInterface(){
         }else{
             canClick[1]=true;
         }
+        
+    }
 
 /*** in HSP v2 you can't change sound to a layout, they all apart of the layout itself***/
     
