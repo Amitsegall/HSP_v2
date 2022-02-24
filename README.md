@@ -9,5 +9,7 @@
  by allowing users to experiment with different design aesthetics using an intuitive approach and modern technology.
  The different layouts challenge traditional instrument design idioms by allowing total creative freedom while making music in the digital age.
  
+ **Project requires OpenFrameworks v0.9.0 or above**
+ 
  
  www.Amitsegall.com
